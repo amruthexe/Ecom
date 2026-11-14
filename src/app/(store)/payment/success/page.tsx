@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { Container, EmptyState, Skeleton } from "@/components/ui/layout";
 import { OrderView } from "@/components/store/order-view";
+import { Celebration } from "@/components/store/celebration";
 import { getGuestOrder } from "@/server/services/customer-orders";
 
 export const metadata: Metadata = { title: "Order confirmed", robots: { index: false } };
@@ -29,6 +30,7 @@ async function Content({ searchParams }: Pick<PageProps<"/payment/success">, "se
   const orderLink = `/orders/${order.id}?t=${first(sp.t)}`;
   return (
     <>
+      {paid && <Celebration id={order.id} />}
       <div className="mb-8 flex flex-col items-center text-center">
         <CheckCircle2 className="size-14 text-accent" />
         <h1 className="mt-4 font-display text-3xl font-semibold text-fg-strong">{paid ? "Thank you! Your order is confirmed" : "We're confirming your payment"}</h1>

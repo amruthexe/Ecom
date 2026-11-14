@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/layout";
 import { AccountMenu, AccountMenuFallback } from "./account-menu";
 import { CartButton } from "./cart-button";
 import { Logo } from "./logo";
-import { MobileNav } from "./mobile-nav";
+import { MobileNav, MobileNavFallback } from "./mobile-nav";
 import { SearchBox } from "./search-box";
 
 export async function Header() {
@@ -16,7 +16,10 @@ export async function Header() {
         <Container className="py-2">Wellness essentials, delivered across India · Prices include GST</Container>
       </div>
       <Container className="flex h-16 items-center gap-3">
-        <MobileNav categories={categories} />
+        {/* MobileNav reads usePathname (active link), so it needs its own Suspense boundary. */}
+        <Suspense fallback={<MobileNavFallback />}>
+          <MobileNav categories={categories} />
+        </Suspense>
         <Logo />
         <nav className="ml-8 hidden items-center gap-1 lg:flex" aria-label="Main">
           <NavLink href="/products">Shop all</NavLink>
