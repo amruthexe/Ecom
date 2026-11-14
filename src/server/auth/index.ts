@@ -32,8 +32,11 @@ export function getAuth(): Promise<Auth> {
 }
 
 export async function getSession() {
+  // Read request headers FIRST: this marks the render as per-request before Better Auth/DB init
+  // touches `new Date()`, which Cache Components would otherwise flag during prerender.
+  const requestHeaders = await headers();
   const auth = await getAuth();
-  return auth.api.getSession({ headers: await headers() });
+  return auth.api.getSession({ headers: requestHeaders });
 }
 
 /** Returns the signed-in admin user (owner/staff), or null for customers/guests/blocked users. */
