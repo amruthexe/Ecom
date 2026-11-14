@@ -3,6 +3,7 @@ import { nextCookies } from "better-auth/next-js";
 import type { Db, MongoClient } from "mongodb";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { isPermission, type Permission, type StaffUser } from "@/lib/permissions";
 import { hasPermission } from "@/lib/permissions";
 import { connectDB } from "../db";
@@ -32,8 +33,10 @@ export function getAuth(): Promise<Auth> {
 }
 
 export async function getSession() {
-  // Read request headers FIRST: this marks the render as per-request before Better Auth/DB init
-  // touches `new Date()`, which Cache Components would otherwise flag during prerender.
+  // A session is per-request and Better Auth reads the clock (`new Date()`) to check expiry.
+  // `connection()` keeps this out of prerendering AND runtime prefetching (partialPrefetching
+  // treats headers/cookies as prefetchable, so reading headers alone is not enough).
+  await connection();
   const requestHeaders = await headers();
   const auth = await getAuth();
   return auth.api.getSession({ headers: requestHeaders });
