@@ -24,7 +24,7 @@ _Last updated: 2026-11-14_
 ## Completed
 **Phase 1**
 - Next.js 16.4.6 + React 19.3 + TypeScript strict + Tailwind 4 + ESLint (Cache Components on)
-- Dependencies: mongoose 9, zod 4, better-auth 1.7, razorpay, cloudinary, motion, lucide-react, server-only, clsx, tailwind-merge; dev: vitest, mongodb-memory-server, tsx
+- Dependencies: mongoose 9, zod 4, better-auth 1.7, razorpay, motion, lucide-react, server-only, clsx, tailwind-merge; dev: vitest, mongodb-memory-server, tsx
 - `.env.example` with all variable names (owner fills `.env.local`)
 - `src/server/env.ts`: lazy Zod validation of env groups (build works without secrets)
 - `src/server/db.ts`: cached Mongoose connection, DigitalOcean TLS CA support, `sanitizeFilter` on
@@ -37,8 +37,11 @@ _Last updated: 2026-11-14_
 See CLAUDE.md → "Owner decisions" and "Still open".
 
 ## Waiting on owner
-- `.env.local` values: DigitalOcean MongoDB URL (+ CA cert), image provider keys, Razorpay test keys
-- Confirm image provider: Cloudinary or ImageKit
+- **Razorpay**: keys in `.env.local` are LIVE and were rejected (HTTP 401). Need `rzp_test_` key id + secret from Dashboard (Test Mode) → API Keys, and a strong webhook secret
+- **ImageKit**: `IMAGEKIT_PRIVATE_KEY` is still the placeholder `YOUR_NEW_PRIVATE_KEY`
+- **Owner password**: `OWNER_SEED_PASSWORD` must be at least 8 characters
+- **Resend**: key valid but no verified domain, so use `onboarding@resend.dev` until a domain is verified
+- Recommended: create a dedicated DB user instead of `doadmin`
 
 ## Known bugs
 None.
@@ -51,6 +54,9 @@ None.
 | 2026-11-14 | `pnpm test` (6 unit tests: money, GST, slugify) | ✅ 6/6. Caught and fixed a ₹1.5 → ₹1.50 formatting bug |
 | 2026-11-14 | `pnpm build` | ✅ pass |
 | 2026-11-14 | `pnpm start` smoke: `/` → 200, `/nope` → 404 | ✅ pass |
+| 2026-11-14 | MongoDB (DigitalOcean) connect + replica set + transaction | ✅ MongoDB 8.0.26, replica set, transaction OK, no CA cert needed |
+| 2026-11-14 | Razorpay credential check (read-only) | ❌ 401 Unauthorized |
+| 2026-11-14 | Resend key check (read-only) | ✅ valid, ⚠ no verified domain |
 
 ## Environment notes
 - `B:\` drive root is itself a git repo (owned by SYSTEM). This project has its own repo at `B:\ecommerce-platform`.
