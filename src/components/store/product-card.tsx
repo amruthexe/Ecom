@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fromPriceOf, hasVariants, stockState, totalStock } from "@/lib/catalog";
+import { fromPriceOf, hasVariablePricing, stockState, totalStock } from "@/lib/catalog";
 import type { Product } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
@@ -38,7 +38,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
           size="sm"
           pricePaise={price.pricePaise}
           mrpPaise={price.mrpPaise}
-          prefix={hasVariants(product) && product.variants.some((v) => v.mrpPaise !== undefined) ? "From" : undefined}
+          prefix={hasVariablePricing(product) ? "From" : undefined}
         />
       </div>
     </Link>

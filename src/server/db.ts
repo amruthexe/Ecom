@@ -16,7 +16,9 @@ const globalForMongoose = globalThis as unknown as { __mongoose?: Cache };
 const cache: Cache = (globalForMongoose.__mongoose ??= { conn: null, promise: null });
 
 mongoose.set("strictQuery", true);
-mongoose.set("sanitizeFilter", true);
+// NoSQL-injection defence: every user input is Zod-validated to primitives before it reaches a query,
+// and user-supplied objects are never passed as filters. (Global `sanitizeFilter` is NOT used because it
+// also neutralises our own `$in`/`$gte` operators.)
 
 export async function connectDB(): Promise<typeof mongoose> {
   if (cache.conn) return cache.conn;

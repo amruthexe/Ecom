@@ -4,6 +4,8 @@ export type ProductImage = {
   url: string;
   alt: string;
   fileId?: string;
+  width?: number;
+  height?: number;
 };
 
 export type ProductOption = {
@@ -16,8 +18,8 @@ export type ProductVariant = {
   sku: string;
   options: Record<string, string>;
   stock: number;
+  /** Optional per-variant MRP override. The product's discount % still applies. */
   mrpPaise?: number;
-  salePaise?: number;
 };
 
 export type Category = {
@@ -25,6 +27,7 @@ export type Category = {
   slug: string;
   name: string;
   description: string;
+  image?: ProductImage;
 };
 
 export type Product = {
@@ -37,7 +40,8 @@ export type Product = {
   tags: string[];
   images: ProductImage[];
   mrpPaise: number;
-  salePaise?: number;
+  /** 0–90. Sale price = MRP × (100 − discount) / 100, rounded to the rupee. */
+  discountPercent: number;
   sku: string;
   stock: number; // used when there are no variants
   options: ProductOption[];
@@ -48,6 +52,8 @@ export type Product = {
   ratingCount: number;
   createdAt: string; // ISO
 };
+
+export type ProductStatus = "draft" | "active" | "archived";
 
 export type Paginated<T> = {
   items: T[];

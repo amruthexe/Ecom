@@ -13,7 +13,7 @@ import { parseCatalogQuery } from "@/lib/validators/catalog";
 
 export async function generateStaticParams() {
   const categories = await listCategories();
-  return categories.map((c) => ({ slug: c.slug }));
+  return categories.length ? categories.map((c) => ({ slug: c.slug })) : [{ slug: "__none__" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/categories/[slug]">): Promise<Metadata> {

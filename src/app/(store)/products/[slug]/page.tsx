@@ -10,7 +10,8 @@ import { getCategory, getProduct, getRelatedProducts, listProductSlugs } from "@
 
 export async function generateStaticParams() {
   const slugs = await listProductSlugs();
-  return slugs.map((slug) => ({ slug }));
+  // Cache Components needs at least one param; unknown slugs render on demand.
+  return slugs.length ? slugs.map((slug) => ({ slug })) : [{ slug: "__none__" }];
 }
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {

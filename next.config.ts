@@ -4,7 +4,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "ik.imagekit.io" }],
+    loader: "custom",
+    loaderFile: "./src/lib/imagekit-loader.ts",
   },
   turbopack: {
     rules: {

@@ -17,9 +17,9 @@
 | Session theft | httpOnly, Secure, SameSite=Lax cookies; session rotation on login; logout invalidates server session |
 | CSRF | Server Actions have built-in origin checks; Better Auth origin checks; JSON APIs require same-origin |
 | XSS | React escaping. Rich-text product descriptions sanitized server-side (allow-list); strict CSP headers |
-| Malicious uploads | Signed Cloudinary uploads only for admins; allowed formats `jpg,png,webp,avif`, max 5 MB, folder-locked signature, short timestamp window |
-| NoSQL injection | Zod validation + Mongoose `sanitizeFilter`/`strictQuery`; never pass raw query objects |
-| Secret leakage | Secrets only in server env vars; only `NEXT_PUBLIC_RAZORPAY_KEY_ID` and `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` are public; `server-only` import guard on server modules |
+| Malicious uploads | ImageKit signed uploads, signature issued only to staff with products/categories permission (10-min expiry, single-use token, rate-limited); client checks jpg/png/webp/avif ≤ 5 MB; server only accepts image URLs from our own ImageKit endpoint |
+| NoSQL injection | Zod validation to primitives before any query, `strictQuery`, user regex input escaped; raw request objects never used as filters (global `sanitizeFilter` intentionally off: it breaks server-built `$in`/`$gte` operators) |
+| Secret leakage | Secrets only in server env vars; only `NEXT_PUBLIC_RAZORPAY_KEY_ID` and the ImageKit public key + URL endpoint are public; `server-only` import guard on server modules |
 | Error leakage | Central error mapper; stack traces only in server logs |
 | Accountability | `AuditLog` for product/price/stock/order status/refund/settings/customer status changes |
 | Blocked customers | Checked at login and checkout |

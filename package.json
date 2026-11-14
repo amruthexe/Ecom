@@ -9,12 +9,16 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "create-owner": "tsx --env-file=.env.local scripts/create-owner.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "better-auth": "^1.7.23",
     "clsx": "^2.1.1",
     "lucide-react": "^1.72.0",
+    "mongodb": "~7.8.0",
     "mongoose": "^9.12.1",
     "motion": "^14.14.0",
     "next": "16.4.6",
@@ -26,6 +30,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -37,7 +42,6 @@
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@10.19.0"
