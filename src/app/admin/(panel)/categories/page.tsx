@@ -9,6 +9,9 @@ import { ProductArt } from "@/components/store/product-art";
 import { requireStaffPage } from "@/server/auth";
 import { listAdminCategories } from "@/server/services/categories";
 
+// Admin pages always check the signed-in user on the server before rendering, so they block by design.
+export const instant = false;
+
 export const metadata: Metadata = { title: "Categories" };
 
 export default async function AdminCategoriesPage({ searchParams }: PageProps<"/admin/categories">) {

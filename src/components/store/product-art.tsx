@@ -17,10 +17,10 @@ function hash(input: string): number {
 export function ProductArt({ seed, label, className }: { seed: string; label?: string; className?: string }) {
   const h = hash(seed);
   const pattern = h % 4;
-  const cx = 140 + (h % 120);
-  const cy = 190 + ((h >> 8) % 120);
-  const r = 70 + ((h >> 16) % 50);
-  const rot = (h >> 4) % 180;
+  const cx = 140 + (h % 120); // h is unsigned; use >>> so shifted values stay positive
+  const cy = 190 + ((h >>> 8) % 120);
+  const r = 70 + ((h >>> 16) % 50);
+  const rot = (h >>> 4) % 180;
 
   return (
     <svg
@@ -33,7 +33,7 @@ export function ProductArt({ seed, label, className }: { seed: string; label?: s
       <rect width="400" height="500" fill="#101310" />
       <g stroke="#22c55e" fill="none" strokeWidth="1.25">
         {pattern === 0 &&
-          [0, 1, 2, 3, 4, 5].map((i) => <circle key={i} cx={cx} cy={cy} r={r - i * 12} opacity={0.75 - i * 0.11} />)}
+          [0, 1, 2, 3, 4, 5].map((i) => <circle key={i} cx={cx} cy={cy} r={Math.max(2, r - i * 12)} opacity={0.75 - i * 0.11} />)}
         {pattern === 1 && (
           <g transform={`rotate(${rot} ${cx} ${cy})`}>
             <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} opacity={0.7} />

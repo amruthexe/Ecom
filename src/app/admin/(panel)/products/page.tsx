@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import { requireStaffPage } from "@/server/auth";
 import { listAdminProducts, type AdminProductRow } from "@/server/services/products";
 
+// Admin pages always check the signed-in user on the server before rendering, so they block by design.
+export const instant = false;
+
 export const metadata: Metadata = { title: "Products" };
 
 const TABS: { value: ProductStatus | "all"; label: string }[] = [

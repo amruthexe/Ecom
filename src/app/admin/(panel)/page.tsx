@@ -7,6 +7,9 @@ import { formatPaise } from "@/lib/money";
 import { requireStaffPage } from "@/server/auth";
 import { getDashboardStats } from "@/server/services/products";
 
+// Admin pages always check the signed-in user on the server before rendering, so they block by design.
+export const instant = false;
+
 export default async function AdminDashboard({ searchParams }: PageProps<"/admin">) {
   const user = await requireStaffPage();
   const { denied } = await searchParams;

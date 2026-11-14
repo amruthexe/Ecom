@@ -4,6 +4,9 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { Skeleton } from "@/components/ui/layout";
 import { requireStaffPage } from "@/server/auth";
 
+// Admin pages always check the signed-in user on the server before rendering, so they block by design.
+export const instant = false;
+
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Vevvion Admin" }, robots: { index: false, follow: false } };
 
 export default function AdminPanelLayout({ children }: LayoutProps<"/admin">) {

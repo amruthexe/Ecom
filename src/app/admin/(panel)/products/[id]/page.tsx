@@ -10,6 +10,9 @@ import { requireStaffPage } from "@/server/auth";
 import { listCategoryOptions } from "@/server/services/categories";
 import { getProductForEdit } from "@/server/services/products";
 
+// Admin pages always check the signed-in user on the server before rendering, so they block by design.
+export const instant = false;
+
 export const metadata: Metadata = { title: "Edit product" };
 
 export default async function EditProductPage({ params, searchParams }: PageProps<"/admin/products/[id]">) {
