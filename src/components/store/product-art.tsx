@@ -63,7 +63,7 @@ export function ProductArt({ seed, label, className }: { seed: string; label?: s
           </>
         )}
       </g>
-      <text x="24" y="474" fill="#4ade80" opacity="0.5" fontSize="13" letterSpacing="4" fontFamily="var(--font-display-app), sans-serif">
+      <text x="24" y="474" fill="#4ade80" opacity="0.5" fontSize="13" letterSpacing="4" fontFamily="var(--font-poppins), sans-serif">
         VEVVION
       </text>
     </svg>

@@ -2,6 +2,7 @@ import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { listCategories } from "@/server/catalog";
 import { Container } from "@/components/ui/layout";
+import { BRAND_TAGLINE } from "@/components/brand-logo";
 import { Logo } from "./logo";
 
 async function CopyrightYear() {
@@ -17,7 +18,7 @@ export async function Footer() {
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-4">
           <Logo variant="full" className="h-14 w-auto" />
-          <p className="max-w-xs text-sm text-fg-muted">Thoughtfully chosen products, delivered across India.</p>
+          <p className="max-w-xs text-sm text-fg-muted">Thoughtfully sourced wellness essentials for everyday balance, delivered across India.</p>
         </div>
         <FooterColumn title="Shop">
           <FooterLink href="/products">All products</FooterLink>
@@ -28,14 +29,15 @@ export async function Footer() {
           ))}
         </FooterColumn>
         <FooterColumn title="Help">
+          <FooterLink href="/my-orders">My orders</FooterLink>
+          <FooterLink href="/account">My account</FooterLink>
           <FooterLink href="/cart">Your cart</FooterLink>
-          <li className="text-sm text-fg-muted">Prices include GST</li>
           <li className="text-sm text-fg-muted">Payments secured by Razorpay</li>
         </FooterColumn>
         <FooterColumn title="Why Vevvion">
-          <li className="text-sm text-fg-muted">Carefully chosen products</li>
-          <li className="text-sm text-fg-muted">Delivery across India</li>
-          <li className="text-sm text-fg-muted">Order tracking from your account</li>
+          <li className="text-sm text-fg-muted">Thoughtfully sourced ingredients</li>
+          <li className="text-sm text-fg-muted">Honest, GST-inclusive pricing</li>
+          <li className="text-sm text-fg-muted">Track every order from your account</li>
         </FooterColumn>
       </Container>
       <div className="border-t border-border">
@@ -43,7 +45,7 @@ export async function Footer() {
           <p>
             © <CopyrightYear /> Vevvion. All rights reserved.
           </p>
-          <p>Made in India</p>
+          <p>{BRAND_TAGLINE}</p>
         </Container>
       </div>
     </footer>

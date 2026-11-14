@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 
-const sans = Inter({ variable: "--font-sans-app", subsets: ["latin"] });
-const display = Space_Grotesk({ variable: "--font-display-app", subsets: ["latin"] });
+// One family for the whole site (owner request): Poppins for body and headings.
+const poppins = Poppins({ variable: "--font-poppins", subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], display: "swap" });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: "Vevvion — A New Vision To Success", template: "%s · Vevvion" },
-  description: "Vevvion — A New Vision To Success. Quality products, GST-inclusive prices, delivered across India.",
+  description: "Vevvion — A New Vision To Success. Thoughtfully sourced wellness essentials for everyday balance, delivered across India.",
   applicationName: "Vevvion",
   openGraph: { siteName: "Vevvion", type: "website" },
 };
@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${sans.variable} ${display.variable} h-full antialiased`}>
+    <html lang="en-IN" className={`${poppins.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-bg text-fg">{children}</body>
     </html>
   );

@@ -13,7 +13,7 @@ export function NewsletterForm() {
   if (done)
     return (
       <p className="flex items-center gap-2 text-sm text-fg-strong" role="status">
-        <Check className="size-4" /> Thanks! Newsletter sign-ups open soon — we&apos;ll keep you posted.
+        <Check className="size-4" /> Thank you! Our newsletter launches soon — we&apos;ll keep you posted.
       </p>
     );
   return (

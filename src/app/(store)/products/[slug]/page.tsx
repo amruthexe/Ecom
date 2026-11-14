@@ -98,7 +98,7 @@ async function ProductDetails({ params }: { params: PageProps<"/products/[slug]"
           </div>
 
           <ul className="mt-8 grid gap-3 border-t border-border pt-6 text-sm sm:grid-cols-3">
-            <Assurance icon={<Truck className="size-4" />} text="Delivery across India" />
+            <Assurance icon={<Truck className="size-4" />} text="Delivered across India" />
             <Assurance icon={<ShieldCheck className="size-4" />} text="Secure Razorpay checkout" />
             <Assurance icon={<RotateCcw className="size-4" />} text="Cancel before dispatch" />
           </ul>
@@ -115,7 +115,7 @@ async function ProductDetails({ params }: { params: PageProps<"/products/[slug]"
 
       {related.length > 0 && (
         <section className="mt-24">
-          <SectionHeading eyebrow="You may also like" title="Related products" />
+          <SectionHeading eyebrow="Complete your routine" title="You may also like" />
           <ProductGrid products={related} />
         </section>
       )}

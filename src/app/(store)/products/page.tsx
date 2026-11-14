@@ -10,14 +10,14 @@ import { ProductGridSkeleton } from "@/components/store/product-card-skeleton";
 import { listCategories, queryProducts } from "@/server/catalog";
 import { parseCatalogQuery } from "@/lib/validators/catalog";
 
-export const metadata: Metadata = { title: "Shop all", description: "Browse every Vevvion product." };
+export const metadata: Metadata = { title: "Shop all", description: "Explore Vevvion's full range of wellness essentials." };
 
 export default function ProductsPage({ searchParams }: PageProps<"/products">) {
   return (
     <Container className="py-10 sm:py-14">
       <header className="mb-8">
         <h1 className="font-display text-3xl font-semibold tracking-tight text-fg-strong sm:text-4xl">Shop all</h1>
-        <p className="mt-2 text-fg-muted">Everything in the Vevvion collection.</p>
+        <p className="mt-2 text-fg-muted">Explore our full range of wellness essentials.</p>
       </header>
       <Suspense fallback={<CatalogSkeleton />}>
         <Catalog searchParams={searchParams} />

@@ -22,7 +22,7 @@ export function CartView() {
       <EmptyState
         icon={<ShoppingBag className="size-10" />}
         title="Your cart is empty"
-        description="Browse the collection and add something you love."
+        description="Explore our wellness essentials and add something for your routine."
         action={
           <Link href="/products" className={buttonClasses("primary", "lg")}>
             Start shopping

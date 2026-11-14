@@ -39,8 +39,8 @@
   --color-warning: var(--warning);
   --color-info: var(--info);
   --color-ring: var(--ring);
-  --font-sans: var(--font-sans-app);
-  --font-display: var(--font-display-app);
+  --font-sans: var(--font-poppins);
+  --font-display: var(--font-poppins);
 }
 
 html {
@@ -50,7 +50,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans-app), system-ui, sans-serif;
+  font-family: var(--font-poppins), system-ui, sans-serif;
   overflow-x: hidden;
 }
 

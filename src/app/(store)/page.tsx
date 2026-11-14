@@ -1,4 +1,4 @@
-import { ArrowRight, BadgePercent, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, Leaf, ShieldCheck, Truck } from "lucide-react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
 import { Container, SectionHeading } from "@/components/ui/layout";
@@ -26,16 +26,16 @@ export default async function HomePage() {
             <BrandLogo variant="mark" className="mb-6 h-14 w-auto sm:hidden" priority />
             <p className="text-xs font-medium tracking-[0.3em] text-fg-muted uppercase">{BRAND_TAGLINE}</p>
             <h1 className="mt-5 font-display text-5xl leading-[1.02] font-semibold tracking-tight text-fg-strong sm:text-6xl lg:text-7xl">
-              Made to be
+              Everyday wellness,
               <br />
-              worn every day.
+              naturally.
             </h1>
             <p className="mt-6 max-w-md text-base text-fg-muted sm:text-lg">
-              Essentials designed with care, built to last, and priced honestly — GST included.
+              Thoughtfully sourced essentials to support your daily routine — honest ingredients, honest prices, GST included.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href="/products" className={buttonClasses("primary", "lg")}>
-                Shop the collection <ArrowRight className="size-4" />
+                Shop wellness <ArrowRight className="size-4" />
               </Link>
               <Link href="/products?sort=popular" className={buttonClasses("secondary", "lg")}>
                 Best sellers
@@ -54,16 +54,16 @@ export default async function HomePage() {
       {/* Value props */}
       <section className="border-b border-border bg-surface">
         <Container className="grid gap-6 py-8 sm:grid-cols-3">
-          <ValueProp icon={<Truck className="size-5" />} title="Delivery across India" text="Packed with care and dispatched quickly." />
-          <ValueProp icon={<ShieldCheck className="size-5" />} title="Secure payments" text="UPI, cards and netbanking via Razorpay." />
-          <ValueProp icon={<BadgePercent className="size-5" />} title="Honest pricing" text="All prices include GST. No surprises." />
+          <ValueProp icon={<Leaf className="size-5" />} title="Thoughtfully sourced" text="Quality ingredients chosen with care." />
+          <ValueProp icon={<Truck className="size-5" />} title="Delivered across India" text="Packed with care and dispatched quickly." />
+          <ValueProp icon={<ShieldCheck className="size-5" />} title="Safe, secure checkout" text="UPI, cards and netbanking via Razorpay. GST included." />
         </Container>
       </section>
 
       {/* Categories */}
       <Container className="pt-20">
         <Reveal>
-          <SectionHeading eyebrow="Browse" title="Shop by category" />
+          <SectionHeading eyebrow="Explore" title="Shop by category" />
           <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-5">
             {categories.map((c) => (
               <Link
@@ -84,31 +84,25 @@ export default async function HomePage() {
         </Reveal>
       </Container>
 
-      <ProductSection eyebrow="Curated" title="Featured" href="/products" products={featured} />
+      <ProductSection eyebrow="Handpicked" title="Our wellness picks" href="/products" products={featured} />
 
       {/* Promo banners */}
       <Container className="pt-20">
         <Reveal className="grid gap-5 md:grid-cols-2">
-          <Promo
-            eyebrow="Limited time"
-            title="Up to 25% off audio"
-            text="Noise-cancelling earbuds and more."
-            href="/categories/tech"
-            seed="promo-tech"
-          />
-          <Promo eyebrow="Just landed" title="The layering edit" text="Overshirts, merino and heavyweight tees." href="/categories/apparel" seed="promo-apparel" />
+          <Promo eyebrow="Start here" title="Build your daily ritual" text="Simple essentials for a calmer, more balanced routine." href="/products?sort=popular" seed="promo-ritual" />
+          <Promo eyebrow="Just in" title="New to Vevvion" text="Fresh additions to our wellness range." href="/products?sort=newest" seed="promo-new" />
         </Reveal>
       </Container>
 
-      <ProductSection eyebrow="Fresh" title="New arrivals" href="/products?sort=newest" products={newArrivals} />
-      <ProductSection eyebrow="Loved by customers" title="Best sellers" href="/products?sort=popular" products={bestSellers} />
+      <ProductSection eyebrow="Just in" title="New arrivals" href="/products?sort=newest" products={newArrivals} />
+      <ProductSection eyebrow="Customer favourites" title="Best sellers" href="/products?sort=popular" products={bestSellers} />
 
       {/* Newsletter */}
       <Container className="pt-24">
         <Reveal className="flex flex-col items-start justify-between gap-6 rounded-xl border border-border bg-surface p-8 sm:p-12 lg:flex-row lg:items-center">
           <div>
-            <h2 className="font-display text-2xl font-semibold text-fg-strong sm:text-3xl">Be first to know</h2>
-            <p className="mt-2 max-w-md text-fg-muted">New drops, restocks and members-only offers. No spam.</p>
+            <h2 className="font-display text-2xl font-semibold text-fg-strong sm:text-3xl">Join the Vevvion community</h2>
+            <p className="mt-2 max-w-md text-fg-muted">Wellness tips, new launches and member-only offers. No spam, ever.</p>
           </div>
           <NewsletterForm />
         </Reveal>

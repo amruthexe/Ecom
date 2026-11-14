@@ -13,7 +13,7 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur-md">
       <div className="border-b border-border bg-surface text-center text-xs text-fg-muted">
-        <Container className="py-2">Prices include GST · Secure payments via Razorpay</Container>
+        <Container className="py-2">Wellness essentials, delivered across India · Prices include GST</Container>
       </div>
       <Container className="flex h-16 items-center gap-3">
         <MobileNav categories={categories} />
