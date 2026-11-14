@@ -7,9 +7,9 @@ import { InventoryTransaction } from "@/server/models/inventory-transaction";
 import { Order } from "@/server/models/order";
 import { Payment } from "@/server/models/payment";
 import { Product } from "@/server/models/product";
-import { setGatewayForTests, type GatewayPayment, type PaymentGateway } from "@/server/razorpay";
+import { setGatewayForTests, type GatewayOrder, type GatewayPayment, type PaymentGateway } from "@/server/razorpay";
 import { saveCategory } from "@/server/services/categories";
-import { createCheckout, expirePendingOrders, finalizePaidOrder, refundOrder, updateOrderStatus, verifyCheckoutPayment, verifyOrderAccessToken } from "@/server/services/orders";
+import { createCheckout, expirePendingOrders, finalizePaidOrder, reconcileOrderPayment, refundOrder, updateOrderStatus, verifyCheckoutPayment, verifyOrderAccessToken } from "@/server/services/orders";
 import { quoteCart } from "@/server/services/pricing";
 import { saveProduct } from "@/server/services/products";
 import { handleRazorpayWebhook } from "@/server/services/webhooks";
@@ -34,10 +34,29 @@ class FakeGateway implements PaymentGateway {
     this.orders.set(id, amountPaise);
     return { id, amount: amountPaise, currency: "INR" };
   }
-  pay(orderId: string, opts: { amount?: number; status?: GatewayPayment["status"] } = {}): GatewayPayment {
-    const p: GatewayPayment = { id: `pay_T${this.next}`, order_id: orderId, status: opts.status ?? "captured", amount: opts.amount ?? this.orders.get(orderId)!, currency: "INR", method: "upi" };
+  /** Simulates a payment. `fee` mimics Razorpay accounts where the customer pays the gateway fee on top. */
+  pay(orderId: string, opts: { amount?: number; status?: GatewayPayment["status"]; fee?: number; reportFee?: boolean } = {}): GatewayPayment {
+    const base = opts.amount ?? this.orders.get(orderId)!;
+    const fee = opts.fee ?? 0;
+    const p: GatewayPayment = {
+      id: `pay_T${this.next}`,
+      order_id: orderId,
+      status: opts.status ?? "captured",
+      amount: base + fee,
+      currency: "INR",
+      method: "upi",
+      fee: opts.reportFee === false ? undefined : fee,
+    };
     this.payments.set(p.id, p);
     return p;
+  }
+  async fetchOrder(orderId: string): Promise<GatewayOrder> {
+    const amount = this.orders.get(orderId)!;
+    const paid = [...this.payments.values()].some((p) => p.order_id === orderId && p.status === "captured" && p.amount >= amount);
+    return { id: orderId, amount, amount_paid: paid ? amount : 0, status: paid ? "paid" : "attempted" };
+  }
+  async fetchOrderPayments(orderId: string) {
+    return [...this.payments.values()].filter((p) => p.order_id === orderId);
   }
   async fetchPayment(id: string) {
     return this.payments.get(id)!;
@@ -195,6 +214,38 @@ describe("payment verification", () => {
     const o = await Order.findById(r.orderId).lean();
     expect(o?.status).toBe("pending_payment");
     expect(o?.needsAttention).toMatch(/mismatch/);
+  });
+
+  it("accepts payments where the customer paid Razorpay's fee on top (₹1 order paid as ₹1.03)", async () => {
+    const r = await checkout([{ productId: simpleId, qty: 1 }]);
+    const p = gw.pay(r.razorpayOrderId, { fee: 3 });
+    expect(p.amount).toBe(60003);
+    expect(await finalizePaidOrder(p, "test")).toBe("confirmed");
+    expect((await Payment.findOne({ razorpayOrderId: r.razorpayOrderId }).lean())?.feePaise).toBe(3);
+  });
+
+  it("falls back to Razorpay's order record when the fee isn't reported on the payment", async () => {
+    const r = await checkout([{ productId: simpleId, qty: 1 }]);
+    const p = gw.pay(r.razorpayOrderId, { fee: 3, reportFee: false });
+    expect(await finalizePaidOrder(p, "test")).toBe("confirmed");
+  });
+
+  it("still rejects underpayment even with a fee field", async () => {
+    const r = await checkout([{ productId: simpleId, qty: 1 }]);
+    const p = gw.pay(r.razorpayOrderId, { amount: 50000, fee: 3 });
+    expect(await finalizePaidOrder(p, "test")).toBe("amount_mismatch");
+  });
+
+  it("reconciles a stuck order by asking Razorpay, and clears the attention flag", async () => {
+    const r = await checkout([{ productId: simpleId, qty: 1 }]);
+    expect(await reconcileOrderPayment(r.orderId, "test")).toBe("unpaid");
+    await Order.updateOne({ _id: r.orderId }, { needsAttention: "Payment amount mismatch: got 60003 INR" });
+    gw.pay(r.razorpayOrderId, { fee: 3 });
+    expect(await reconcileOrderPayment(r.orderId, "admin")).toBe("confirmed");
+    const o = await Order.findById(r.orderId).lean();
+    expect(o).toMatchObject({ status: "confirmed", paymentStatus: "paid" });
+    expect(o?.needsAttention).toBeUndefined();
+    expect(await reconcileOrderPayment(r.orderId, "admin")).toBe("already_paid");
   });
 
   it("cancels and auto-refunds when an item sold out after payment", async () => {

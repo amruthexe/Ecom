@@ -57,9 +57,9 @@ async function processEvent(body: WebhookBody): Promise<"processed" | "ignored">
     case "payment.authorized": {
       // Only relevant when auto-capture is OFF in Razorpay settings.
       const p = body.payload.payment!.entity;
-      const order = await Order.findOne({ razorpayOrderId: p.order_id }, { pricing: 1 }).lean();
+      const order = await Order.findOne({ razorpayOrderId: p.order_id }, { _id: 1 }).lean();
       if (!order) return "ignored";
-      const captured = await getGateway().capture(p.id, order.pricing.totalPaise);
+      const captured = await getGateway().capture(p.id, p.amount); // full authorized amount (incl. any customer-paid fee)
       await finalizePaidOrder(captured, "razorpay-webhook");
       return "processed";
     }

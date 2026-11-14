@@ -28,6 +28,8 @@ export interface PaymentDoc {
   attempts: number;
   refunds: RefundEntry[];
   refundedPaise: number;
+  /** Razorpay fee paid by the customer on top of the order total (customer fee-bearer accounts). */
+  feePaise?: number;
   capturedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -63,6 +65,7 @@ const schema = new Schema<PaymentDoc>(
       default: [],
     },
     refundedPaise: { type: Number, default: 0 },
+    feePaise: Number,
     capturedAt: Date,
   },
   { timestamps: true },

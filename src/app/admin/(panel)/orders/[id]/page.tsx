@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderActions } from "@/components/admin/order-actions";
 import { OrderStatusBadge, PaymentStatusText } from "@/components/admin/order-badges";
+import { ReconcileButton } from "@/components/admin/reconcile-button";
 import { Alert, Panel } from "@/components/admin/ui";
 import { ProductMedia } from "@/components/store/product-media";
 import { formatDateTime } from "@/lib/format";
@@ -78,6 +79,8 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
               {order.refundedPaise > 0 && <Row label="Refunded" value={`− ${formatPaise(order.refundedPaise)}`} />}
             </dl>
           </Panel>
+
+          {(order.paymentStatus === "pending" || order.paymentStatus === "failed") && order.razorpayOrderId && <ReconcileButton id={order.id} />}
 
           <OrderActions
             id={order.id}

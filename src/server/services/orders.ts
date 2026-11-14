@@ -150,6 +150,25 @@ export type FinalizeOutcome = "confirmed" | "already_processed" | "sold_out_refu
 class SoldOutError extends Error {}
 
 /**
+ * Did the customer pay exactly our order total? Razorpay accounts that pass gateway fees to
+ * customers report `payment.amount = order amount + fee`, so we accept:
+ *  - payment.amount === total, or
+ *  - payment.amount − payment.fee === total, or
+ *  - Razorpay's own order (whose amount WE set server-side) shows exactly `total` and is fully paid.
+ */
+async function amountMatches(payment: GatewayPayment, totalPaise: number): Promise<boolean> {
+  if (payment.currency !== "INR") return false;
+  if (payment.amount === totalPaise) return true;
+  if (typeof payment.fee === "number" && payment.amount - payment.fee === totalPaise) return true;
+  try {
+    const o = await getGateway().fetchOrder(payment.order_id);
+    return o.amount === totalPaise && o.amount_paid >= totalPaise && payment.amount >= totalPaise;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * The ONE place an order becomes paid. Idempotent: safe to call from the checkout callback,
  * webhooks, retries, and concurrently. Stock is deducted at most once (guarded by `stockDeducted`).
  */
@@ -158,7 +177,7 @@ export async function finalizePaidOrder(payment: GatewayPayment, by: string): Pr
   const order = await Order.findOne({ razorpayOrderId: payment.order_id }).lean<OrderDoc>();
   if (!order) return "not_found";
   if (order.stockDeducted || order.paymentStatus === "paid") return "already_processed";
-  if (payment.amount !== order.pricing.totalPaise || payment.currency !== "INR") {
+  if (!(await amountMatches(payment, order.pricing.totalPaise))) {
     await Order.updateOne({ _id: order._id }, { needsAttention: `Payment amount mismatch: got ${payment.amount} ${payment.currency}` });
     return "amount_mismatch";
   }
@@ -184,6 +203,7 @@ export async function finalizePaidOrder(payment: GatewayPayment, by: string): Pr
       claimed.paymentStatus = "paid";
       claimed.paidAt = new Date();
       claimed.expiresAt = undefined;
+      claimed.needsAttention = undefined;
       claimed.statusHistory.push(history("confirmed", by, `Paid via Razorpay (${payment.method ?? "online"})`));
       await claimed.save({ session });
       await recordCapturedPayment(payment, session);
@@ -225,6 +245,7 @@ async function recordCapturedPayment(p: GatewayPayment, session?: ClientSession)
         method: p.method,
         email: p.email,
         contact: p.contact,
+        feePaise: typeof p.fee === "number" ? p.fee : undefined,
         capturedAt: new Date(),
         errorCode: undefined,
         errorDescription: undefined,
@@ -269,12 +290,39 @@ export async function verifyCheckoutPayment(raw: unknown): Promise<{ ok: true; o
   // Confirm with Razorpay directly: status, order and amount must match.
   let payment = await getGateway().fetchPayment(razorpay_payment_id);
   if (payment.order_id !== razorpay_order_id) return { ok: false, message: "Payment does not belong to this order" };
-  if (payment.status === "authorized") payment = await getGateway().capture(payment.id, order.pricing.totalPaise);
+  // Capture the full authorized amount (includes the customer-paid fee, if any).
+  if (payment.status === "authorized") payment = await getGateway().capture(payment.id, payment.amount);
   if (payment.status !== "captured") return { ok: false, message: "Payment is not complete yet" };
 
   const outcome = await finalizePaidOrder(payment, "checkout");
   if (outcome === "not_found" || outcome === "amount_mismatch") return { ok: false, message: "Payment could not be matched to your order. Our team has been alerted." };
   return { ok: true, orderId: String(order._id), token: orderAccessToken(String(order._id)), outcome };
+}
+
+export type ReconcileOutcome = FinalizeOutcome | "no_gateway_order" | "unpaid" | "already_paid";
+
+/**
+ * Asks Razorpay directly whether an order was paid and confirms it if so.
+ * Covers the gap when the browser callback failed and webhooks can't reach the server (e.g. localhost).
+ */
+export async function reconcileOrderPayment(orderId: string, by: string): Promise<ReconcileOutcome> {
+  if (!Types.ObjectId.isValid(orderId)) return "not_found";
+  await connectDB();
+  const order = await Order.findById(orderId, { razorpayOrderId: 1, paymentStatus: 1, status: 1 }).lean();
+  if (!order) return "not_found";
+  if (!order.razorpayOrderId) return "no_gateway_order";
+  if (order.paymentStatus !== "pending" && order.paymentStatus !== "failed") return "already_paid";
+
+  const payments = await getGateway().fetchOrderPayments(order.razorpayOrderId);
+  let captured = payments.find((p) => p.status === "captured");
+  if (!captured) {
+    const authorized = payments.find((p) => p.status === "authorized");
+    if (authorized) captured = await getGateway().capture(authorized.id, authorized.amount);
+  }
+  if (captured) return finalizePaidOrder(captured, by);
+  const failed = payments.find((p) => p.status === "failed");
+  if (failed) await markPaymentFailed(order.razorpayOrderId, { paymentId: failed.id, code: failed.error_code ?? undefined, description: failed.error_description ?? undefined }, by);
+  return "unpaid";
 }
 
 /** Marks a still-unpaid order as failed (from browser failure callback or payment.failed webhook). */

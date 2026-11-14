@@ -19,13 +19,19 @@ export type GatewayPayment = {
   contact?: string;
   error_code?: string | null;
   error_description?: string | null;
+  /** Gateway fee in paise. When the account passes fees to customers, `amount` = order amount + fee. */
+  fee?: number | null;
 };
+
+export type GatewayOrder = { id: string; amount: number; amount_paid: number; status: "created" | "attempted" | "paid" };
 
 export type GatewayRefund = { id: string; amount: number; status: "pending" | "processed" | "failed" };
 
 export interface PaymentGateway {
   createOrder(input: { amountPaise: number; receipt: string; notes: Record<string, string> }): Promise<{ id: string; amount: number; currency: string }>;
   fetchPayment(paymentId: string): Promise<GatewayPayment>;
+  fetchOrder(orderId: string): Promise<GatewayOrder>;
+  fetchOrderPayments(orderId: string): Promise<GatewayPayment[]>;
   capture(paymentId: string, amountPaise: number): Promise<GatewayPayment>;
   refund(paymentId: string, amountPaise: number, notes: Record<string, string>): Promise<GatewayRefund>;
 }
@@ -44,6 +50,14 @@ const razorpayGateway: PaymentGateway = {
   },
   async fetchPayment(paymentId) {
     return (await sdk().payments.fetch(paymentId)) as unknown as GatewayPayment;
+  },
+  async fetchOrder(orderId) {
+    const o = await sdk().orders.fetch(orderId);
+    return { id: o.id, amount: Number(o.amount), amount_paid: Number(o.amount_paid), status: o.status as GatewayOrder["status"] };
+  },
+  async fetchOrderPayments(orderId) {
+    const res = await sdk().orders.fetchPayments(orderId);
+    return (res.items ?? []) as unknown as GatewayPayment[];
   },
   async capture(paymentId, amountPaise) {
     return (await sdk().payments.capture(paymentId, amountPaise, "INR")) as unknown as GatewayPayment;
