@@ -14,18 +14,21 @@ export function buildAuth({
   client,
   secret,
   baseURL,
+  trustedOrigins = [],
   plugins = [],
 }: {
   db: Db;
   client: MongoClient;
   secret: string;
   baseURL: string;
+  trustedOrigins?: string[];
   plugins?: BetterAuthPlugin[];
 }) {
   return betterAuth({
     appName: "Vevvion",
     secret,
     baseURL,
+    trustedOrigins,
     database: mongodbAdapter(db, { client }),
     emailAndPassword: {
       enabled: true,

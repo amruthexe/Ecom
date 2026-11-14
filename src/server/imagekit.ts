@@ -39,7 +39,7 @@ export async function deleteImageKitFiles(fileIds: string[]): Promise<void> {
   if (ids.length === 0) return;
   const { IMAGEKIT_PRIVATE_KEY } = env.imagekit();
   try {
-    const res = await fetch("https://api.imagekit.io/v1/files/batchDeleteFiles", {
+    const res = await fetch("https://api.imagekit.io/v1/files/batch/deleteByFileIds", {
       method: "POST",
       headers: {
         Authorization: "Basic " + Buffer.from(IMAGEKIT_PRIVATE_KEY + ":").toString("base64"),

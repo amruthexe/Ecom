@@ -20,6 +20,8 @@ const dbSchema = z.object({
 const authSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
   BETTER_AUTH_URL: z.url(),
+  /** Extra origins allowed to sign in, comma separated (e.g. phone testing on http://192.168.1.5:3000). */
+  BETTER_AUTH_TRUSTED_ORIGINS: optional,
 });
 
 const razorpaySchema = z.object({

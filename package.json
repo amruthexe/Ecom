@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
     "create-owner": "tsx --env-file=.env.local scripts/create-owner.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "cleanup-images": "tsx --env-file=.env.local scripts/cleanup-images.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.23",

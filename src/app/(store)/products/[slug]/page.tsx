@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { ChevronRight, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Container, SectionHeading } from "@/components/ui/layout";
+import { Suspense } from "react";
+import { Container, SectionHeading, Skeleton } from "@/components/ui/layout";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { ProductGrid } from "@/components/store/product-card";
 import { ProductPurchase } from "@/components/store/product-purchase";
@@ -20,7 +21,37 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
   return { title: product.name, description: product.shortDescription };
 }
 
-export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
+/**
+ * `params` is awaited inside <Suspense> so products added after the build (from admin)
+ * get an instant shell, then render and are cached (ISR with Cache Components).
+ */
+export default function ProductPage({ params }: PageProps<"/products/[slug]">) {
+  return (
+    <Suspense fallback={<ProductSkeleton />}>
+      <ProductDetails params={params} />
+    </Suspense>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <Container className="py-8 sm:py-12" aria-busy="true">
+      <Skeleton className="mb-6 h-4 w-64" />
+      <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
+        <Skeleton className="aspect-[4/5] w-full rounded-lg" />
+        <div className="space-y-4">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-10 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    </Container>
+  );
+}
+
+async function ProductDetails({ params }: { params: PageProps<"/products/[slug]">["params"] }) {
   const product = await getProduct((await params).slug);
   if (!product) notFound();
   const [category, related] = await Promise.all([getCategory(product.categorySlug), getRelatedProducts(product, 4)]);

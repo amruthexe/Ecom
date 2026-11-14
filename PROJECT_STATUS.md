@@ -50,14 +50,15 @@ _Last updated: 2026-11-14_
 - Admin pages (mobile-first: bottom tabs, slide-out menu, sticky save bar, card lists on phones, tables on desktop): dashboard, products (search, status/stock filters, pagination), add/edit product (details, images, MRP + discount chips with live price, SKU/stock, variants generator, status, featured, category, tags, URL), publish/unpublish/archive/delete, categories (add/edit/delete-safe, image)
 - ImageKit: server-signed direct browser upload with progress, type/size checks, reorder, cover, alt text, removed images deleted from ImageKit on save; next/image uses an ImageKit loader (resize + AVIF/WebP at the CDN)
 - Storefront reads MongoDB (cached, tag `catalog`; admin saves call `updateTag` so changes show immediately). `pnpm seed` loaded 16 starter products / 5 categories
-- Scripts: `pnpm seed`, `pnpm create-owner`, `pnpm test`, `pnpm test:e2e`
+- Scripts: `pnpm seed`, `pnpm create-owner`, `pnpm cleanup-images`, `pnpm test`, `pnpm test:e2e` (admin E2E needs E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD; runs on port 3100)
+- Phone testing on Wi-Fi: open `http://<PC-IP>:3000`; add that origin to `BETTER_AUTH_TRUSTED_ORIGINS`; dev server allows 192.168.x.x / 10.x.x.x
+- Image guidance: products 4:5 portrait (1200×1500 px ideal), categories 1:1 square (1000×1000), max 5 MB, JPG/PNG/WebP/AVIF
 
 ## Decisions
 See CLAUDE.md → "Owner decisions" and "Still open".
 
 ## Waiting on owner
 - **Razorpay**: owner will provide new LIVE key id + secret (current ones rejected with 401) and a strong webhook secret. Needed for Phase 9
-- **Owner account not created yet**: set `OWNER_SEED_PASSWORD` (8+ chars) in `.env.local`, then run `pnpm create-owner`
 - **Resend**: key valid but no verified domain, so use `onboarding@resend.dev` until a domain is verified
 - Recommended: create a dedicated DB user instead of `doadmin`
 
@@ -65,9 +66,8 @@ See CLAUDE.md → "Owner decisions" and "Still open".
 - Unknown product/category URLs return HTTP 200 with the 404 UI + `noindex` (documented Next.js streaming behaviour with Cache Components). Not harmful for SEO
 - Newsletter form is UI-only (sign-ups not stored until Phase 11). The confirmation says so
 - Checkout button is disabled until Phase 8
-- Images uploaded in the form but never saved (form abandoned) stay in ImageKit (no cleanup job yet)
+- Images uploaded in the form but never saved stay in ImageKit until `pnpm cleanup-images --apply` is run (dry run by default; only touches unused files older than 60 min)
 - Product delete is permanent; once orders exist (Phase 10) it must switch to archive for ordered products (TODO in code)
-- Admin E2E flow (login → create → store → edit → delete) is written but NOT yet run: needs an owner/staff account (E2E_ADMIN_EMAIL/PASSWORD)
 - Mobile layout not yet verified in a real browser/Playwright (Phase 13 E2E; manual check recommended)
 
 ## Testing results
@@ -90,6 +90,10 @@ See CLAUDE.md → "Owner decisions" and "Still open".
 | 2026-11-14 | Integration tests on isolated `vevvion_test` DB (create/update/stock history/audit/slug/SKU/image URL/variants/status/delete, category safe delete) | ✅ 11/11 |
 | 2026-11-14 | Security smoke: /admin without cookie → 307 login; forged cookie → redirect, no data; upload-auth anon/forged → 403; wrong-origin sign-in → 403; sign-in rate limit → 429 after 3 bad tries | ✅ pass |
 | 2026-11-14 | Playwright (Pixel 7 + desktop): no horizontal overflow on 6 routes, cart flow, filters/suggestions, admin redirect, bad login | ✅ 20/20 (admin flow skipped: no account) |
+| 2026-11-14 | Owner account `admin@vevvion.com` created (`pnpm create-owner`), login verified | ✅ |
+| 2026-11-14 | Admin E2E (Pixel 7 + desktop): sign in → create product with ImageKit upload + 25% off → visible in store → edit → delete | ✅ 3/3 |
+| 2026-11-14 | Full Playwright suite | ✅ 23/23 |
+| 2026-11-14 | Bugs caught by admin E2E and fixed: (1) products created after the build crashed their store page (params now awaited inside Suspense = ISR with Cache Components); (2) ImageKit bulk delete used the wrong endpoint; (3) uploader used `crypto.randomUUID` (breaks on http LAN phones); (4) admin dev-mode blocking-route error (`instant = false`) | fixed |
 | 2026-11-14 | Bug caught: global Mongoose `sanitizeFilter` broke `$in`/`$gte` queries → removed, documented in SECURITY.md | fixed |
 
 ## Environment notes

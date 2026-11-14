@@ -15,12 +15,13 @@ let authPromise: Promise<Auth> | null = null;
 export function getAuth(): Promise<Auth> {
   authPromise ??= (async () => {
     const mongoose = await connectDB();
-    const { BETTER_AUTH_SECRET, BETTER_AUTH_URL } = env.auth();
+    const { BETTER_AUTH_SECRET, BETTER_AUTH_URL, BETTER_AUTH_TRUSTED_ORIGINS } = env.auth();
     return buildAuth({
       db: mongoose.connection.db as unknown as Db,
       client: mongoose.connection.getClient() as unknown as MongoClient,
       secret: BETTER_AUTH_SECRET,
       baseURL: BETTER_AUTH_URL,
+      trustedOrigins: (BETTER_AUTH_TRUSTED_ORIGINS ?? "").split(",").map((o) => o.trim()).filter(Boolean),
       plugins: [nextCookies()],
     });
   })().catch((e) => {

@@ -69,7 +69,8 @@ export function ImageUploader({
     if (list.length > slotsLeft) setNotice(`Only ${Math.max(slotsLeft, 0)} more image${slotsLeft === 1 ? "" : "s"} allowed.`);
 
     for (const file of list.slice(0, Math.max(slotsLeft, 0))) {
-      const tempId = crypto.randomUUID();
+      // Not crypto.randomUUID(): it is unavailable on plain-http LAN addresses (phone testing).
+      const tempId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
       const preview = URL.createObjectURL(file);
       const fail = (msg: string) => setPending((p) => p.map((x) => (x.tempId === tempId ? { ...x, error: msg } : x)));
       setPending((p) => [...p, { tempId, name: file.name, preview, progress: 0 }]);
