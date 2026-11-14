@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function NotFound() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-4 py-24 text-center">
+      <BrandLogo variant="horizontal" className="mb-10 h-9 w-auto" />
       <p className="font-display text-7xl font-semibold text-fg-strong">404</p>
       <h1 className="mt-4 text-xl text-fg">Page not found</h1>
       <p className="mt-2 text-fg-muted">The page you are looking for doesn&apos;t exist or has moved.</p>

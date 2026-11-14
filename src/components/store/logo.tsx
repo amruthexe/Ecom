@@ -1,12 +1,11 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 
-export function Logo() {
+/** Header logo: leaf + VEVVION, links home. */
+export function Logo({ variant = "horizontal", className }: { variant?: "horizontal" | "full"; className?: string }) {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="Vevvion home">
-      <span aria-hidden className="grid size-7 place-items-center rounded-[6px] bg-accent font-display text-sm font-bold text-accent-contrast">
-        V
-      </span>
-      <span className="font-display text-lg font-semibold tracking-[0.18em] text-fg-strong">VEVVION</span>
+    <Link href="/" className="flex shrink-0 items-center" aria-label="Vevvion home">
+      <BrandLogo variant={variant} priority className={className ?? "h-7 w-auto sm:h-9"} />
     </Link>
   );
 }

@@ -13,7 +13,8 @@
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
     "create-owner": "tsx --env-file=.env.local scripts/create-owner.ts",
     "test:e2e": "playwright test",
-    "cleanup-images": "tsx --env-file=.env.local scripts/cleanup-images.ts"
+    "cleanup-images": "tsx --env-file=.env.local scripts/cleanup-images.ts",
+    "build-logo": "tsx scripts/build-logo.ts"
   },
   "dependencies": {
     "better-auth": "^1.7.23",
@@ -40,6 +41,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "mongodb-memory-server": "^11.3.0",
+    "sharp": "0.35.5",
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^5",

@@ -9,8 +9,10 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "Vevvion", template: "%s · Vevvion" },
-  description: "Shop Vevvion — quality products delivered across India.",
+  title: { default: "Vevvion — A New Vision To Success", template: "%s · Vevvion" },
+  description: "Vevvion — A New Vision To Success. Quality products, GST-inclusive prices, delivered across India.",
+  applicationName: "Vevvion",
+  openGraph: { siteName: "Vevvion", type: "website" },
 };
 
 export const viewport: Viewport = {

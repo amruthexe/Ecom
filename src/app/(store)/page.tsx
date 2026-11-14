@@ -4,6 +4,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Container, SectionHeading } from "@/components/ui/layout";
 import { Reveal } from "@/components/ui/reveal";
 import { NewsletterForm } from "@/components/store/newsletter";
+import { BrandLogo, BRAND_TAGLINE } from "@/components/brand-logo";
 import { ProductArt } from "@/components/store/product-art";
 import { ProductGrid } from "@/components/store/product-card";
 import { getBestSellers, getFeaturedProducts, getNewArrivals, listCategories } from "@/server/catalog";
@@ -22,7 +23,8 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-b border-border">
         <Container className="grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.1fr_1fr] lg:py-28">
           <Reveal>
-            <p className="text-xs font-medium tracking-[0.3em] text-fg-muted uppercase">New season · 2026</p>
+            <BrandLogo variant="mark" className="mb-6 h-14 w-auto sm:hidden" priority />
+            <p className="text-xs font-medium tracking-[0.3em] text-fg-muted uppercase">{BRAND_TAGLINE}</p>
             <h1 className="mt-5 font-display text-5xl leading-[1.02] font-semibold tracking-tight text-fg-strong sm:text-6xl lg:text-7xl">
               Made to be
               <br />
@@ -40,8 +42,11 @@ export default async function HomePage() {
               </Link>
             </div>
           </Reveal>
-          <Reveal delay={0.1} className="relative hidden aspect-[4/5] max-h-[560px] overflow-hidden rounded-xl border border-border sm:block lg:justify-self-end lg:w-full">
-            <ProductArt seed="vevvion-hero-2026" label="Vevvion collection" />
+          <Reveal delay={0.1} className="relative hidden aspect-[4/5] max-h-[560px] items-center justify-center overflow-hidden rounded-xl border border-border bg-surface sm:flex lg:w-full lg:justify-self-end">
+            <div className="absolute inset-0 opacity-25">
+              <ProductArt seed="vevvion-hero-2026" label="" />
+            </div>
+            <BrandLogo variant="full" className="relative h-auto w-4/5 max-w-md drop-shadow-[0_0_40px_rgba(34,197,94,0.15)]" priority />
           </Reveal>
         </Container>
       </section>

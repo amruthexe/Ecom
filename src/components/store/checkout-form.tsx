@@ -161,6 +161,7 @@ export function CheckoutForm({ customer, addresses }: { customer: CheckoutCustom
       order_id: data.razorpayOrderId,
       name: "Vevvion",
       description: `Order ${data.orderNumber}`,
+      image: `${window.location.origin}/brand/logo-mark-256.png`,
       prefill: data.prefill,
       notes: { orderNumber: data.orderNumber },
       theme: { color: "#22c55e", backdrop_color: "#0a0a0a" },

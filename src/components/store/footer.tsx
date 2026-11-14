@@ -16,8 +16,8 @@ export async function Footer() {
     <footer className="mt-24 border-t border-border bg-surface">
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-4">
-          <Logo />
-          <p className="max-w-xs text-sm text-fg-muted">Thoughtfully made essentials, delivered across India.</p>
+          <Logo variant="full" className="h-14 w-auto" />
+          <p className="max-w-xs text-sm text-fg-muted">Thoughtfully chosen products, delivered across India.</p>
         </div>
         <FooterColumn title="Shop">
           <FooterLink href="/products">All products</FooterLink>

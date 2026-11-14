@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 import { hasPermission, type Permission, type StaffUser } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand-logo";
 import { Sheet } from "@/components/ui/sheet";
 import { adminSignOutAction } from "@/server/actions/auth";
 
@@ -79,8 +80,10 @@ export function AdminShell({ user, children }: { user: StaffUser; children: Reac
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface lg:flex">
         <div className="flex h-16 items-center gap-2 border-b border-border px-5">
-          <span className="grid size-7 place-items-center rounded-[6px] bg-accent font-display text-sm font-bold text-accent-contrast">V</span>
-          <span className="font-display font-semibold tracking-[0.18em] text-fg-strong">ADMIN</span>
+          <Link href="/admin" aria-label="Admin dashboard">
+            <BrandLogo variant="horizontal" className="h-7 w-auto" />
+          </Link>
+          <span className="rounded border border-border px-1.5 py-0.5 text-[10px] tracking-widest text-fg-muted">ADMIN</span>
         </div>
         <div className="flex-1 overflow-y-auto p-3">{navList()}</div>
         {userBox}
@@ -92,7 +95,9 @@ export function AdminShell({ user, children }: { user: StaffUser; children: Reac
           <button onClick={() => setOpen(true)} className="rounded-md p-2 text-fg hover:bg-surface-2" aria-label="Open admin menu">
             <Menu className="size-5" />
           </button>
-          <span className="font-display font-semibold tracking-[0.18em] text-fg-strong">VEVVION</span>
+          <Link href="/admin" aria-label="Admin dashboard">
+            <BrandLogo variant="horizontal" className="h-6 w-auto" />
+          </Link>
           {canProducts && (
             <Link href="/admin/products/new" className="ml-auto flex items-center gap-1 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-contrast">
               <Plus className="size-4" /> Product

@@ -44,7 +44,8 @@ test("search suggestions and filters", async ({ page, isMobile }) => {
 test("admin redirects anonymous visitors to login", async ({ page }) => {
   await page.goto("/admin/products");
   await expect(page).toHaveURL(/\/admin\/login/);
-  await expect(page.getByRole("heading", { name: "Vevvion Admin" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Admin", exact: true })).toBeVisible();
+  await expect(page.getByRole("img", { name: /Vevvion/ })).toBeVisible();
 });
 
 test("admin login rejects bad credentials", async ({ page }) => {

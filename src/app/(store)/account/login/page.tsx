@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Container, Skeleton } from "@/components/ui/layout";
 import { LoginForm } from "@/components/store/auth-forms";
 import { safeNext } from "@/lib/validators/account";
@@ -12,6 +13,7 @@ export default function LoginPage({ searchParams }: PageProps<"/account/login">)
   return (
     <Container className="flex justify-center py-12 sm:py-20">
       <div className="w-full max-w-sm">
+        <BrandLogo variant="full" className="mx-auto mb-8 h-16 w-auto" priority />
         <h1 className="font-display text-3xl font-semibold text-fg-strong">Log in</h1>
         <p className="mt-2 mb-6 text-sm text-fg-muted">Log in to place orders and see your orders on any device.</p>
         <div className="rounded-lg border border-border bg-surface p-5">
