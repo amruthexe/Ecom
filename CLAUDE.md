@@ -32,7 +32,7 @@ ARCHITECTURE.md · DATABASE_SCHEMA.md · API_DOCUMENTATION.md · SECURITY.md · 
 - Brand: **Vevvion**. Theme: black background, green text.
 - Tax: **GST-inclusive prices** (`splitInclusiveGst` in `src/lib/money.ts` shows the GST part on invoices/order summaries).
 - Shipping: **simple**. Collect and display the delivery address; the owner handles delivery manually. No courier integration. Admin enters status (and optional tracking note) by hand.
-- Payments: **Razorpay only, no COD.**
+- Payments: **Razorpay only, no COD.** Owner chose to use **LIVE keys only**, with no test mode (2026-11-14). Consequences: every payment during development moves real money, so manual payment testing uses a ₹1 product and is refunded right after. Automated tests never call Razorpay (they mock it). Refunds have a real effect.
 - Roles: **owner** (the first admin, created by `pnpm create-owner`) can create and manage **staff** accounts with selectable permissions. Plus `customer`.
 - Database: **MongoDB hosted on DigitalOcean** (not Atlas). URL provided by owner in `.env.local`.
 - Images: **ImageKit** (owner decision). `IMAGE_PROVIDER=imagekit`. Cloudinary is not implemented.
