@@ -75,11 +75,22 @@ export function CheckoutForm() {
   const itemsJson = useMemo(() => JSON.stringify(toItems(cart)), [cart]);
   useEffect(() => {
     if (cart.length === 0) return;
-    const ctrl = new AbortController();
-    fetch("/api/checkout/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: JSON.parse(itemsJson) }), signal: ctrl.signal })
-      .then(async (r) => (r.ok ? setQuote(await r.json()) : setQuoteError("Couldn't load prices. Please refresh.")))
-      .catch(() => {});
-    return () => ctrl.abort();
+    // Ignore stale responses instead of aborting: React dev mode runs effects twice, and an aborted
+    // fetch surfaces as an "AbortError" in the Next.js dev overlay.
+    let stale = false;
+    fetch("/api/checkout/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: JSON.parse(itemsJson) }) })
+      .then(async (r) => {
+        const data = r.ok ? await r.json() : null;
+        if (stale) return;
+        if (data) setQuote(data);
+        else setQuoteError("Couldn't load prices. Please refresh.");
+      })
+      .catch(() => {
+        if (!stale) setQuoteError("Couldn't load prices. Check your connection and refresh.");
+      });
+    return () => {
+      stale = true;
+    };
   }, [itemsJson, cart.length]);
 
   const fixCart = useCallback(() => {

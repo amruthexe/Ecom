@@ -19,22 +19,23 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
   useEffect(() => {
     const term = q.trim();
     if (term.length < 2) return;
-    const ctrl = new AbortController();
+    let stale = false; // ignore out-of-date responses (no AbortController: avoids dev-overlay AbortErrors)
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search/suggest?q=${encodeURIComponent(term)}`, { signal: ctrl.signal });
-        if (!res.ok) return;
+        const res = await fetch(`/api/search/suggest?q=${encodeURIComponent(term)}`);
+        if (!res.ok || stale) return;
         const data: { suggestions: SearchSuggestion[] } = await res.json();
+        if (stale) return;
         setItems(data.suggestions);
         setActive(-1);
         setOpen(true);
       } catch {
-        /* aborted or offline */
+        /* offline */
       }
     }, 180);
     return () => {
+      stale = true;
       clearTimeout(t);
-      ctrl.abort();
     };
   }, [q]);
 
