@@ -34,6 +34,7 @@ export const checkoutSchema = z.object({
     pincode: z.string().trim().regex(/^[1-9]\d{5}$/, "Enter a 6-digit PIN code"),
   }),
   idempotencyKey: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
+  saveAddress: z.boolean().optional().default(false),
 });
 
 export type CheckoutInput = z.input<typeof checkoutSchema>;

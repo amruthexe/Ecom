@@ -1,6 +1,7 @@
 import "server-only";
 import { connection } from "next/server";
 import { getOrderDetail, type OrderDetail } from "./sales";
+import { ownsOrder } from "./account";
 import { reconcileOrderPayment, verifyOrderAccessToken } from "./orders";
 
 const RECONCILE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
@@ -13,6 +14,17 @@ const RECONCILE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 export async function getGuestOrder(orderId: string | undefined, token: string | undefined): Promise<OrderDetail | null> {
   await connection(); // always rendered per request (live order + payment status)
   if (!orderId || !verifyOrderAccessToken(orderId, token)) return null;
+  return loadForCustomer(orderId);
+}
+
+/** A signed-in customer's own order. Returns null for orders that belong to someone else. */
+export async function getMyOrder(userId: string, orderId: string): Promise<OrderDetail | null> {
+  await connection();
+  if (!(await ownsOrder(userId, orderId))) return null;
+  return loadForCustomer(orderId);
+}
+
+async function loadForCustomer(orderId: string): Promise<OrderDetail | null> {
   let order = await getOrderDetail(orderId);
   if (!order) return null;
   const unpaid = order.paymentStatus === "pending" || order.paymentStatus === "failed";

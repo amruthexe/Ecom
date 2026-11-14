@@ -39,6 +39,12 @@ export function MobileNav({ categories }: { categories: Category[] }) {
           <MobileLink href="/cart" onClick={close}>
             Cart
           </MobileLink>
+          <MobileLink href="/my-orders" onClick={close}>
+            My orders
+          </MobileLink>
+          <MobileLink href="/account" onClick={close}>
+            My account
+          </MobileLink>
         </nav>
       </Sheet>
     </>

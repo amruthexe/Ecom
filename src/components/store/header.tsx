@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { listCategories } from "@/server/catalog";
 import { Container } from "@/components/ui/layout";
+import { AccountMenu, AccountMenuFallback } from "./account-menu";
 import { CartButton } from "./cart-button";
 import { Logo } from "./logo";
 import { MobileNav } from "./mobile-nav";
@@ -26,6 +28,9 @@ export async function Header() {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <SearchBox className="hidden w-64 md:block xl:w-72" />
+          <Suspense fallback={<AccountMenuFallback />}>
+            <AccountMenu />
+          </Suspense>
           <CartButton />
         </div>
       </Container>

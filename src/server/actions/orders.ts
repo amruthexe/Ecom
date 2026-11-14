@@ -1,11 +1,13 @@
 "use server";
 
 import { updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { hasPermission } from "@/lib/permissions";
 import type { OrderStatus } from "@/lib/orders";
 import { AuthorizationError, requireStaff } from "../auth";
 import { CATALOG_TAG } from "../catalog";
+import { setCustomerStatus } from "../services/customers";
 import { reconcileOrderPayment, refundOrder, updateOrderStatus } from "../services/orders";
 
 export type OrderActionState = { ok?: boolean; message?: string; error?: string };
@@ -89,4 +91,13 @@ export async function reconcileOrderAction(_prev: OrderActionState, formData: Fo
     console.error("[reconcile]", e);
     return { error: "Couldn't reach Razorpay. Try again in a minute." };
   }
+}
+
+export async function setCustomerStatusAction(formData: FormData): Promise<void> {
+  const user = await requireStaff("customers").catch(() => null);
+  if (!user) redirect("/admin?denied=customers");
+  const id = String(formData.get("id") ?? "");
+  const status = formData.get("status") === "blocked" ? "blocked" : "active";
+  await setCustomerStatus(id, status, user);
+  redirect(`/admin/customers/${id}?updated=1`);
 }

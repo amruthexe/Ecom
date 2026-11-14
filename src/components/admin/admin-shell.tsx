@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, FolderTree, LayoutDashboard, LogOut, Menu, Package, Plus, ShoppingCart, Store } from "lucide-react";
+import { CreditCard, FolderTree, LayoutDashboard, LogOut, Menu, Package, Plus, ShoppingCart, Store, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
@@ -16,6 +16,7 @@ const NAV: NavItem[] = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart, permission: "orders" },
   { href: "/admin/products", label: "Products", icon: Package, permission: "products" },
   { href: "/admin/categories", label: "Categories", icon: FolderTree, permission: "categories" },
+  { href: "/admin/customers", label: "Customers", icon: Users, permission: "customers" },
   { href: "/admin/payments", label: "Payments", icon: CreditCard, permission: "payments" },
 ];
 

@@ -98,6 +98,10 @@ export const cartStore = {
   clear() {
     commit(EMPTY);
   },
+  /** Replace the whole cart (used when syncing with the customer's account). */
+  replace(lines: Omit<CartLine, "key">[]) {
+    commit(lines.map((l) => ({ ...l, key: `${l.productId}:${l.variantId ?? "-"}` })));
+  },
 };
 
 export function useCart(): CartLine[] {

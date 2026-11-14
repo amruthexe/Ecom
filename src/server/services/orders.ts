@@ -47,14 +47,17 @@ export type CheckoutResult =
   | { ok: false; errors?: Record<string, string>; problems?: QuoteProblem[]; message?: string };
 
 /** Creates a pending order with server-computed prices, then a Razorpay order for exactly that amount. */
-export async function createCheckout(raw: unknown, opts: { userId?: string; keyId: string }): Promise<CheckoutResult> {
-  const parsed = checkoutSchema.safeParse(raw);
+export async function createCheckout(raw: unknown, opts: { userId?: string; accountEmail?: string; keyId: string }): Promise<CheckoutResult> {
+  // The signed-in account's email always wins, so orders can't be attached to someone else's email.
+  const withEmail = opts.accountEmail && raw && typeof raw === "object" ? { ...(raw as Record<string, unknown>), contact: { ...((raw as { contact?: object }).contact ?? {}), email: opts.accountEmail } } : raw;
+  const parsed = checkoutSchema.safeParse(withEmail);
   if (!parsed.success) return { ok: false, errors: fieldErrors(parsed.error) };
   const input = parsed.data;
   await connectDB();
 
   // Idempotency: a double-click / retry with the same key returns the same pending order.
   const existing = await Order.findOne({ idempotencyKey: input.idempotencyKey }).lean<OrderDoc>();
+  if (existing && existing.userId !== opts.userId) return { ok: false, message: "This checkout was already used. Please refresh and try again." };
   if (existing) {
     if (existing.status === "pending_payment" && existing.razorpayOrderId) {
       return {

@@ -41,6 +41,7 @@ export function buildAuth({
     },
     user: {
       additionalFields: {
+        phone: { type: "string", required: false, input: true },
         role: { type: ["customer", "staff", "owner"], required: false, defaultValue: "customer", input: false },
         permissions: { type: "string[]", required: false, defaultValue: [], input: false },
         status: { type: ["active", "blocked"], required: false, defaultValue: "active", input: false },

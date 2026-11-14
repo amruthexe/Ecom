@@ -2,7 +2,7 @@
 
 _Last updated: 2026-11-14_
 
-## Current phase: **Checkout, Razorpay, orders & payments built** → waiting for working Razorpay keys to run one real ₹1 payment test
+## Current phase: **Customer accounts done** → next: staff management, order emails (needs verified Resend domain), coupons, store settings
 
 | Phase | Status |
 |---|---|
@@ -17,7 +17,7 @@ _Last updated: 2026-11-14_
 | 8. Cart & checkout | ☑ Done (guest checkout; coupons pending) |
 | 9. Razorpay integration | ◐ Built + tested with a fake gateway; live keys currently rejected (401) |
 | 10. Order & payment management | ☑ Done |
-| 11. Customer accounts & notifications | ☐ |
+| 11. Customer accounts & notifications | ◐ Accounts done (login required to order, cross-device cart & orders, addresses, admin customers). Emails pending |
 | 12. Analytics, security, optimization | ☐ |
 | 13. Testing & deployment | ☐ |
 
@@ -64,6 +64,14 @@ _Last updated: 2026-11-14_
 - Admin: Orders (filters: to fulfil, shipped, delivered, unpaid/failed, cancelled, needs attention; search), order detail (items, customer, address, payment ids, refunds, timeline), status buttons (processing → packed → shipped (+ tracking note) → delivered), cancel (restock + optional refund), partial/full refunds (refunds permission), Payments list, dashboard revenue (today / 7 / 14 days, India time, net of refunds) + 14-day chart + recent orders
 - Automated tests NEVER use real keys (vitest forces dummy Razorpay keys; fake gateway)
 
+**Customer accounts**
+- Owner decision (2026-11-14): customers must log in before ordering; browsing and adding to cart stay open
+- Register/login (/account/register, /account/login, rate-limited, safe `next` redirects), My account (profile, addresses, password change signs out other devices, logout), My orders + order detail (ownership-checked, auto-reconciles unpaid orders with Razorpay)
+- Cart saved to the account (Cart model + /api/cart) → same cart on every device; guest cart merged at login; logout clears the device cart
+- Checkout requires login (page + API 401); account email always used; saved-address picker; new addresses saved
+- Admin → Customers: list (orders, spent, joined), detail (orders, addresses), block/unblock (signs out everywhere)
+- No email verification / self-service password reset yet (Resend has no verified domain) → owner resets passwords for now
+
 ## Decisions
 See CLAUDE.md → "Owner decisions" and "Still open".
 
@@ -75,7 +83,9 @@ See CLAUDE.md → "Owner decisions" and "Still open".
 ## Known bugs / limitations
 - Unknown product/category URLs return HTTP 200 with the 404 UI + `noindex` (documented Next.js streaming behaviour with Cache Components). Not harmful for SEO
 - Newsletter form is UI-only (sign-ups not stored until Phase 11). The confirmation says so
-- No order emails yet (Phase 11); the success page does not claim an email was sent
+- No order emails yet; the success page does not claim an email was sent
+- No self-service password reset yet (needs verified email domain)
+- Order VV100002 (owner's ₹1 test, placed as guest before accounts existed) is not linked to any customer account
 - Coupons not built yet
 - Shipping is free by default (StoreSettings); there is no settings screen yet to change shipping/GST
 - Webhooks need a public URL (deployment or a tunnel); on localhost the checkout callback alone confirms orders
@@ -109,6 +119,9 @@ See CLAUDE.md → "Owner decisions" and "Still open".
 | 2026-11-14 | Payment integration tests (fake gateway, vevvion_test): server pricing, idempotent checkout, forged signature, single stock deduction incl. 5 concurrent confirmations, authorized→capture, amount mismatch, sold-out auto-refund, webhook signature/duplicates/failed→retry, partial & over-refund, status flow, cancel restock, expiry + late payment | ✅ 17/17 (52 total) |
 | 2026-11-14 | E2E checkout (mobile + desktop): validation errors, graceful "temporarily unavailable" when Razorpay rejects keys, forged order links show nothing; admin orders/payments/revenue pages | ✅ |
 | 2026-11-14 | Test orders created by E2E removed from live DB; order counter reset to VV100001 | done |
+| 2026-11-14 | Real ₹1 live payment (VV100002) rejected as "amount mismatch" because Razorpay added a ₹0.03 customer-paid fee → fixed (fee-aware check + Razorpay order check), order reconciled to Confirmed/Paid | fixed |
+| 2026-11-14 | Two-device account E2E (mobile + desktop): login-gated checkout, guest cart merged at signup, same cart & orders on 2nd device, other customer's order hidden, logout clears device cart, admin sees customer | ✅ |
+| 2026-11-14 | Full Playwright suite | ✅ 31/31; unit+integration ✅ 56/56; test customers removed from live DB |
 | 2026-11-14 | Bugs caught by admin E2E and fixed: (1) products created after the build crashed their store page (params now awaited inside Suspense = ISR with Cache Components); (2) ImageKit bulk delete used the wrong endpoint; (3) uploader used `crypto.randomUUID` (breaks on http LAN phones); (4) admin dev-mode blocking-route error (`instant = false`) | fixed |
 | 2026-11-14 | Bug caught: global Mongoose `sanitizeFilter` broke `$in`/`$gte` queries → removed, documented in SECURITY.md | fixed |
 

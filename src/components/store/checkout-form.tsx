@@ -25,7 +25,6 @@ declare global {
   }
 }
 
-const SAVED_KEY = "vevvion.checkout.details.v1";
 const newKey = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`.slice(0, 40);
 
 function loadRazorpay(): Promise<boolean> {
@@ -45,27 +44,33 @@ const lineKey = (p: { productId: string; variantId?: string }) => `${p.productId
 type Details = { name: string; email: string; phone: string; line1: string; line2: string; landmark: string; city: string; state: string; pincode: string };
 const EMPTY: Details = { name: "", email: "", phone: "", line1: "", line2: "", landmark: "", city: "", state: "", pincode: "" };
 
-/** Saved contact/address from this device (convenience only). */
-function readSaved(): Details {
-  try {
-    const saved = JSON.parse(localStorage.getItem(SAVED_KEY) ?? "null");
-    return saved && typeof saved === "object" ? { ...EMPTY, ...saved } : EMPTY;
-  } catch {
-    return EMPTY;
-  }
+export type CheckoutCustomer = { name: string; email: string; phone: string };
+export type CheckoutAddress = { id: string; name: string; phone: string; line1: string; line2: string; landmark: string; city: string; state: string; pincode: string; isDefault: boolean };
+
+function fromAddress(customer: CheckoutCustomer, a?: CheckoutAddress): Details {
+  if (!a) return { ...EMPTY, name: customer.name, email: customer.email, phone: customer.phone };
+  return { name: a.name, email: customer.email, phone: a.phone, line1: a.line1, line2: a.line2, landmark: a.landmark, city: a.city, state: a.state, pincode: a.pincode };
 }
 
 const noopSubscribe = () => () => {};
 /** false during SSR/hydration, true after — avoids flashing "empty cart" before localStorage is read. */
 const useHydrated = () => useSyncExternalStore(noopSubscribe, () => true, () => false);
 
-export function CheckoutForm() {
+export function CheckoutForm({ customer, addresses }: { customer: CheckoutCustomer; addresses: CheckoutAddress[] }) {
   const router = useRouter();
   const cart = useCart();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState<string>();
   const hydrated = useHydrated();
-  const [d, setD] = useState<Details>(() => (typeof window === "undefined" ? EMPTY : readSaved()));
+  const defaultAddress = addresses.find((a) => a.isDefault) ?? addresses[0];
+  const [addressId, setAddressId] = useState<string>(defaultAddress?.id ?? "new");
+  const [saveAddress, setSaveAddress] = useState(true);
+  const [d, setD] = useState<Details>(() => fromAddress(customer, defaultAddress));
+  const chooseAddress = (id: string) => {
+    setAddressId(id);
+    setErrors({});
+    setD(fromAddress(customer, addresses.find((a) => a.id === id)));
+  };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string>();
   const [phase, setPhase] = useState<"idle" | "creating" | "paying" | "verifying">("idle");
@@ -111,11 +116,6 @@ export function CheckoutForm() {
     setErrors({});
     setMessage(undefined);
     setPhase("creating");
-    try {
-      localStorage.setItem(SAVED_KEY, JSON.stringify(d));
-    } catch {
-      /* ignore */
-    }
 
     const [ok, res] = await Promise.all([
       loadRazorpay(),
@@ -127,11 +127,16 @@ export function CheckoutForm() {
           contact: { name: d.name, email: d.email, phone: d.phone },
           address: { line1: d.line1, line2: d.line2, landmark: d.landmark, city: d.city, state: d.state, pincode: d.pincode },
           idempotencyKey: (idemKey.current ??= newKey()),
+          saveAddress: addressId === "new" && saveAddress,
         }),
       }).then(async (r) => ({ status: r.status, data: await r.json().catch(() => ({})) })),
     ]);
 
     const data = res.data;
+    if (res.status === 401 && data.loginRequired) {
+      router.push("/account/login?next=/checkout");
+      return;
+    }
     if (!data.ok) {
       setPhase("idle");
       if (data.errors) setErrors(data.errors);
@@ -176,7 +181,7 @@ export function CheckoutForm() {
           .catch(() => ({ ok: false }));
         cartStore.clear();
         // Even if verification is slow, the webhook confirms the order; the order page shows live status.
-        router.replace(v.ok ? `/payment/success?order=${v.orderId}&t=${v.token}` : `/orders/${data.orderId}?t=${data.token}&check=1`);
+        router.replace(v.ok ? `/my-orders/${v.orderId}?placed=1` : `/my-orders/${data.orderId}?check=1`);
       },
     });
     rzp.on("payment.failed", (r) => {
@@ -221,46 +226,79 @@ export function CheckoutForm() {
   return (
     <form onSubmit={pay} noValidate className="grid gap-8 lg:grid-cols-[1fr_400px]">
       <div className="space-y-6">
-        <Section title="Contact">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <F label="Full name" id="name" error={errors["contact.name"]} className="sm:col-span-2">
-              <input id="name" autoComplete="name" value={d.name} onChange={set("name")} className={inp(errors["contact.name"])} />
-            </F>
-            <F label="Email" id="email" error={errors["contact.email"]} hint="Order updates are sent here">
-              <input id="email" type="email" autoComplete="email" inputMode="email" value={d.email} onChange={set("email")} className={inp(errors["contact.email"])} />
-            </F>
-            <F label="Mobile number" id="phone" error={errors["contact.phone"]}>
-              <input id="phone" type="tel" autoComplete="tel-national" inputMode="tel" placeholder="98765 43210" value={d.phone} onChange={set("phone")} className={inp(errors["contact.phone"])} />
-            </F>
-          </div>
-        </Section>
-
         <Section title="Delivery address">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <F label="House / flat, building, street" id="line1" error={errors["address.line1"]} className="sm:col-span-2">
-              <input id="line1" autoComplete="address-line1" value={d.line1} onChange={set("line1")} className={inp(errors["address.line1"])} />
-            </F>
-            <F label="Area / locality (optional)" id="line2" className="sm:col-span-2">
-              <input id="line2" autoComplete="address-line2" value={d.line2} onChange={set("line2")} className={inp()} />
-            </F>
-            <F label="Landmark (optional)" id="landmark">
-              <input id="landmark" value={d.landmark} onChange={set("landmark")} className={inp()} />
-            </F>
-            <F label="PIN code" id="pincode" error={errors["address.pincode"]}>
-              <input id="pincode" autoComplete="postal-code" inputMode="numeric" maxLength={6} value={d.pincode} onChange={(e) => setD((x) => ({ ...x, pincode: e.target.value.replace(/\D/g, "") }))} className={inp(errors["address.pincode"])} />
-            </F>
-            <F label="City" id="city" error={errors["address.city"]}>
-              <input id="city" autoComplete="address-level2" value={d.city} onChange={set("city")} className={inp(errors["address.city"])} />
-            </F>
-            <F label="State" id="state" error={errors["address.state"]}>
-              <select id="state" autoComplete="address-level1" value={d.state} onChange={set("state")} className={inp(errors["address.state"])}>
-                <option value="">Select state</option>
-                {INDIAN_STATES.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </F>
-          </div>
+          {addresses.length > 0 && (
+            <div className="mb-4 grid gap-2" role="radiogroup" aria-label="Choose a delivery address">
+              {addresses.map((a) => (
+                <label
+                  key={a.id}
+                  className={cn(
+                    "flex cursor-pointer gap-3 rounded-md border p-3 text-sm transition-colors",
+                    addressId === a.id ? "border-accent bg-accent/10" : "border-border hover:border-border-strong",
+                  )}
+                >
+                  <input type="radio" name="addressChoice" checked={addressId === a.id} onChange={() => chooseAddress(a.id)} className="mt-1 size-4 accent-[var(--accent)]" />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-fg-strong">
+                      {a.name} · {a.phone}
+                      {a.isDefault && <span className="ml-2 rounded-full border border-accent/40 px-1.5 text-[10px] text-fg">Default</span>}
+                    </span>
+                    <span className="block text-fg-muted">
+                      {a.line1}
+                      {a.line2 ? `, ${a.line2}` : ""}, {a.city}, {a.state} {a.pincode}
+                    </span>
+                  </span>
+                </label>
+              ))}
+              <label className={cn("flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm", addressId === "new" ? "border-accent bg-accent/10" : "border-border hover:border-border-strong")}>
+                <input type="radio" name="addressChoice" checked={addressId === "new"} onChange={() => chooseAddress("new")} className="size-4 accent-[var(--accent)]" />
+                <span className="font-medium text-fg-strong">Use a new address</span>
+              </label>
+            </div>
+          )}
+          {(errors["contact.name"] || errors["contact.phone"] || Object.keys(errors).some((k) => k.startsWith("address."))) && addressId !== "new" && (
+            <p className="mb-3 text-sm text-danger">This saved address is incomplete. Choose “Use a new address” and enter it again.</p>
+          )}
+          {addressId === "new" && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <F label="Recipient name" id="name" error={errors["contact.name"]}>
+                <input id="name" autoComplete="name" value={d.name} onChange={set("name")} className={inp(errors["contact.name"])} />
+              </F>
+              <F label="Mobile number" id="phone" error={errors["contact.phone"]}>
+                <input id="phone" type="tel" autoComplete="tel-national" inputMode="tel" placeholder="98765 43210" value={d.phone} onChange={set("phone")} className={inp(errors["contact.phone"])} />
+              </F>
+              <F label="House / flat, building, street" id="line1" error={errors["address.line1"]} className="sm:col-span-2">
+                <input id="line1" autoComplete="address-line1" value={d.line1} onChange={set("line1")} className={inp(errors["address.line1"])} />
+              </F>
+              <F label="Area / locality (optional)" id="line2" className="sm:col-span-2">
+                <input id="line2" autoComplete="address-line2" value={d.line2} onChange={set("line2")} className={inp()} />
+              </F>
+              <F label="Landmark (optional)" id="landmark">
+                <input id="landmark" value={d.landmark} onChange={set("landmark")} className={inp()} />
+              </F>
+              <F label="PIN code" id="pincode" error={errors["address.pincode"]}>
+                <input id="pincode" autoComplete="postal-code" inputMode="numeric" maxLength={6} value={d.pincode} onChange={(e) => setD((x) => ({ ...x, pincode: e.target.value.replace(/D/g, "") }))} className={inp(errors["address.pincode"])} />
+              </F>
+              <F label="City" id="city" error={errors["address.city"]}>
+                <input id="city" autoComplete="address-level2" value={d.city} onChange={set("city")} className={inp(errors["address.city"])} />
+              </F>
+              <F label="State" id="state" error={errors["address.state"]}>
+                <select id="state" autoComplete="address-level1" value={d.state} onChange={set("state")} className={inp(errors["address.state"])}>
+                  <option value="">Select state</option>
+                  {INDIAN_STATES.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              </F>
+              <label className="flex items-center gap-2 text-sm text-fg sm:col-span-2">
+                <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} className="size-4 accent-[var(--accent)]" />
+                Save this address to my account
+              </label>
+            </div>
+          )}
+          <p className="mt-4 text-xs text-fg-muted">
+            Order updates go to <span className="text-fg">{customer.email}</span>
+          </p>
         </Section>
 
         <Section title="Payment">
