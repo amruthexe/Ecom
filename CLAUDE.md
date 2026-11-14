@@ -35,7 +35,7 @@ ARCHITECTURE.md · DATABASE_SCHEMA.md · API_DOCUMENTATION.md · SECURITY.md · 
 - Payments: **Razorpay only, no COD.**
 - Roles: **owner** (the first admin, created by `pnpm create-owner`) can create and manage **staff** accounts with selectable permissions. Plus `customer`.
 - Database: **MongoDB hosted on DigitalOcean** (not Atlas). URL provided by owner in `.env.local`.
-- Images: Cloudinary **or** ImageKit, chosen by `IMAGE_PROVIDER`. Only the chosen one is implemented (Cloudinary by default until the owner confirms).
+- Images: **ImageKit** (owner decision). `IMAGE_PROVIDER=imagekit`. Cloudinary is not implemented.
 - Env vars: the owner fills `.env.local` from `.env.example`.
 
 ## Still open (defaults used if not answered)
