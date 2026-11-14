@@ -38,7 +38,6 @@ See CLAUDE.md → "Owner decisions" and "Still open".
 
 ## Waiting on owner
 - **Razorpay**: keys in `.env.local` are LIVE and were rejected (HTTP 401). Need `rzp_test_` key id + secret from Dashboard (Test Mode) → API Keys, and a strong webhook secret
-- **ImageKit**: `IMAGEKIT_PRIVATE_KEY` is still the placeholder `YOUR_NEW_PRIVATE_KEY`
 - **Owner password**: `OWNER_SEED_PASSWORD` must be at least 8 characters
 - **Resend**: key valid but no verified domain, so use `onboarding@resend.dev` until a domain is verified
 - Recommended: create a dedicated DB user instead of `doadmin`
@@ -55,7 +54,8 @@ None.
 | 2026-11-14 | `pnpm build` | ✅ pass |
 | 2026-11-14 | `pnpm start` smoke: `/` → 200, `/nope` → 404 | ✅ pass |
 | 2026-11-14 | MongoDB (DigitalOcean) connect + replica set + transaction | ✅ MongoDB 8.0.26, replica set, transaction OK, no CA cert needed |
-| 2026-11-14 | Razorpay credential check (read-only) | ❌ 401 Unauthorized |
+| 2026-11-14 | Razorpay credential check (read-only) | ❌ 401 Unauthorized. Owner will provide new live keys |
+| 2026-11-14 | ImageKit: auth, upload, CDN delivery, delete (1×1 test image) | ✅ 200 / 200 / 204 |
 | 2026-11-14 | Resend key check (read-only) | ✅ valid, ⚠ no verified domain |
 
 ## Environment notes
