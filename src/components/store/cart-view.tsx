@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Lock, ShoppingBag, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { formatPaise, splitInclusiveGst } from "@/lib/money";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/layout";
 import { Price } from "@/components/ui/price";
 import { cartCount, cartStore, cartSubtotal, MAX_QTY_PER_LINE, useCart } from "./cart-store";
@@ -97,9 +97,9 @@ export function CartView() {
             <p className="mt-1 text-xs text-fg-muted">Includes approx. {formatPaise(gstPaise)} GST</p>
           </div>
         </dl>
-        <Button size="lg" className="mt-6 w-full" disabled title="Checkout is enabled in a later phase">
-          <Lock className="size-4" /> Checkout — coming soon
-        </Button>
+        <Link href="/checkout" className={buttonClasses("primary", "lg", "mt-6 w-full")}>
+          <Lock className="size-4" /> Checkout securely
+        </Link>
         <p className="mt-3 text-center text-xs text-fg-muted">Final prices and stock are confirmed at checkout.</p>
       </aside>
     </div>

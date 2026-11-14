@@ -2,7 +2,7 @@
 
 _Last updated: 2026-11-14_
 
-## Current phase: **Admin portal (products & categories) built** → next: owner account, staff management, then cart & checkout
+## Current phase: **Checkout, Razorpay, orders & payments built** → waiting for working Razorpay keys to run one real ₹1 payment test
 
 | Phase | Status |
 |---|---|
@@ -14,9 +14,9 @@ _Last updated: 2026-11-14_
 | 5. Admin dashboard | ◐ Catalogue stats; orders/revenue come after checkout |
 | 6. Product & category management | ☑ Done |
 | 7. Image management (ImageKit) | ☑ Done |
-| 8. Cart & checkout | ☐ |
-| 9. Razorpay integration | ☐ |
-| 10. Order & payment management | ☐ |
+| 8. Cart & checkout | ☑ Done (guest checkout; coupons pending) |
+| 9. Razorpay integration | ◐ Built + tested with a fake gateway; live keys currently rejected (401) |
+| 10. Order & payment management | ☑ Done |
 | 11. Customer accounts & notifications | ☐ |
 | 12. Analytics, security, optimization | ☐ |
 | 13. Testing & deployment | ☐ |
@@ -54,18 +54,31 @@ _Last updated: 2026-11-14_
 - Phone testing on Wi-Fi: open `http://<PC-IP>:3000`; add that origin to `BETTER_AUTH_TRUSTED_ORIGINS`; dev server allows 192.168.x.x / 10.x.x.x
 - Image guidance: products 4:5 portrait (1200×1500 px ideal), categories 1:1 square (1000×1000), max 5 MB, JPG/PNG/WebP/AVIF
 
+**Checkout & payments (phases 8–10)**
+- Models: Order (item/price/address snapshots, status history, `stockDeducted` guard), Payment (Razorpay ids, refunds), WebhookEvent (unique event id, 90-day TTL), Counter (order numbers VV100001…), StoreSettings (shipping, GST %, pending-order TTL)
+- Pricing only on the server (`quoteCart`): DB prices, discount %, stock checks, merged duplicate lines, shipping rule, GST-inclusive split
+- Flow: /checkout → POST /api/checkout (pending order + Razorpay order, idempotency key) → Razorpay Checkout → POST /api/payments/verify (HMAC + fetch payment from Razorpay, capture if authorized) → single idempotent `finalizePaidOrder` (transaction, atomic claim, conditional stock decrement, inventory log). Webhook /api/webhooks/razorpay (raw-body HMAC, duplicate-safe) uses the same function
+- Sold out between checkout and payment → order cancelled + automatic full refund + "needs attention" flag
+- Failed payments → payment_failed (retry in the same Razorpay window still confirms); abandoned → expired by /api/cron/expire-orders (CRON_SECRET); late payments still confirm
+- Customer pages: /checkout (validated Indian address/phone/PIN), /payment/success, /payment/failed, /orders/[id]?t= (HMAC-derived private link)
+- Admin: Orders (filters: to fulfil, shipped, delivered, unpaid/failed, cancelled, needs attention; search), order detail (items, customer, address, payment ids, refunds, timeline), status buttons (processing → packed → shipped (+ tracking note) → delivered), cancel (restock + optional refund), partial/full refunds (refunds permission), Payments list, dashboard revenue (today / 7 / 14 days, India time, net of refunds) + 14-day chart + recent orders
+- Automated tests NEVER use real keys (vitest forces dummy Razorpay keys; fake gateway)
+
 ## Decisions
 See CLAUDE.md → "Owner decisions" and "Still open".
 
 ## Waiting on owner
-- **Razorpay**: owner will provide new LIVE key id + secret (current ones rejected with 401) and a strong webhook secret. Needed for Phase 9
+- **Razorpay**: keys in `.env.local` are still rejected (401 Authentication failed, re-checked 2026-11-14 13:38). Need a matching live Key ID + Key Secret, and a strong webhook secret; then add the webhook in the Razorpay dashboard once the site has a public URL
 - **Resend**: key valid but no verified domain, so use `onboarding@resend.dev` until a domain is verified
 - Recommended: create a dedicated DB user instead of `doadmin`
 
 ## Known bugs / limitations
 - Unknown product/category URLs return HTTP 200 with the 404 UI + `noindex` (documented Next.js streaming behaviour with Cache Components). Not harmful for SEO
 - Newsletter form is UI-only (sign-ups not stored until Phase 11). The confirmation says so
-- Checkout button is disabled until Phase 8
+- No order emails yet (Phase 11); the success page does not claim an email was sent
+- Coupons not built yet
+- Shipping is free by default (StoreSettings); there is no settings screen yet to change shipping/GST
+- Webhooks need a public URL (deployment or a tunnel); on localhost the checkout callback alone confirms orders
 - Images uploaded in the form but never saved stay in ImageKit until `pnpm cleanup-images --apply` is run (dry run by default; only touches unused files older than 60 min)
 - Product delete is permanent; once orders exist (Phase 10) it must switch to archive for ordered products (TODO in code)
 - Mobile layout not yet verified in a real browser/Playwright (Phase 13 E2E; manual check recommended)
@@ -93,6 +106,9 @@ See CLAUDE.md → "Owner decisions" and "Still open".
 | 2026-11-14 | Owner account `admin@vevvion.com` created (`pnpm create-owner`), login verified | ✅ |
 | 2026-11-14 | Admin E2E (Pixel 7 + desktop): sign in → create product with ImageKit upload + 25% off → visible in store → edit → delete | ✅ 3/3 |
 | 2026-11-14 | Full Playwright suite | ✅ 23/23 |
+| 2026-11-14 | Payment integration tests (fake gateway, vevvion_test): server pricing, idempotent checkout, forged signature, single stock deduction incl. 5 concurrent confirmations, authorized→capture, amount mismatch, sold-out auto-refund, webhook signature/duplicates/failed→retry, partial & over-refund, status flow, cancel restock, expiry + late payment | ✅ 17/17 (52 total) |
+| 2026-11-14 | E2E checkout (mobile + desktop): validation errors, graceful "temporarily unavailable" when Razorpay rejects keys, forged order links show nothing; admin orders/payments/revenue pages | ✅ |
+| 2026-11-14 | Test orders created by E2E removed from live DB; order counter reset to VV100001 | done |
 | 2026-11-14 | Bugs caught by admin E2E and fixed: (1) products created after the build crashed their store page (params now awaited inside Suspense = ISR with Cache Components); (2) ImageKit bulk delete used the wrong endpoint; (3) uploader used `crypto.randomUUID` (breaks on http LAN phones); (4) admin dev-mode blocking-route error (`instant = false`) | fixed |
 | 2026-11-14 | Bug caught: global Mongoose `sanitizeFilter` broke `$in`/`$gte` queries → removed, documented in SECURITY.md | fixed |
 

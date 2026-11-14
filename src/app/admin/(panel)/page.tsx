@@ -6,6 +6,8 @@ import { hasPermission } from "@/lib/permissions";
 import { formatPaise } from "@/lib/money";
 import { requireStaffPage } from "@/server/auth";
 import { getDashboardStats } from "@/server/services/products";
+import { getSalesOverview } from "@/server/services/sales";
+import { SalesOverview } from "@/components/admin/sales-overview";
 
 // Admin pages always check the signed-in user on the server before rendering, so they block by design.
 export const instant = false;
@@ -14,13 +16,14 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
   const user = await requireStaffPage();
   const { denied } = await searchParams;
   const canProducts = hasPermission(user, "products");
-  const stats = canProducts ? await getDashboardStats() : null;
+  const canOrders = hasPermission(user, "orders");
+  const [stats, sales] = await Promise.all([canProducts ? getDashboardStats() : null, canOrders ? getSalesOverview(14) : null]);
 
   return (
     <>
       <PageHeader
         title={`Hi, ${user.name.split(" ")[0]}`}
-        description="Here's how your catalogue looks today."
+        description="Here's how your store is doing today."
         actions={
           canProducts && (
             <Link href="/admin/products/new" className={buttonClasses("primary", "md", "hidden lg:inline-flex")}>
@@ -30,6 +33,7 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
         }
       />
       {denied && <Alert tone="error">You don&apos;t have access to that section.</Alert>}
+      {sales && <SalesOverview data={sales} />}
 
       {stats && (
         <>
@@ -76,7 +80,6 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
               </ul>
             </Panel>
           </div>
-          <p className="mt-6 text-xs text-fg-muted">Orders, revenue and payments appear here once checkout is live.</p>
         </>
       )}
     </>

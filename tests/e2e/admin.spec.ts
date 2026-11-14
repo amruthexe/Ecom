@@ -59,4 +59,18 @@ test.describe("admin product management", () => {
     await expect(page).toHaveURL(/\/admin\/products\?deleted=1/);
     await expect(page.getByText("Product deleted.")).toBeVisible();
   });
+
+  test("orders, payments and revenue pages load", async ({ page }) => {
+    await page.goto("/admin");
+    await expect(page.getByText("Revenue today")).toBeVisible();
+    await expect(page.getByText("Revenue, last 14 days")).toBeVisible();
+    await page.goto("/admin/orders");
+    await expect(page.getByRole("heading", { level: 1, name: "Orders", exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "Unpaid / failed" }).click();
+    await expect(page).toHaveURL(/filter=unpaid/);
+    await page.goto("/admin/payments");
+    await expect(page.getByRole("heading", { level: 1, name: "Payments", exact: true })).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
 });

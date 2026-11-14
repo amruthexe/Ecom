@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderTree, LayoutDashboard, LogOut, Menu, Package, Plus, Store } from "lucide-react";
+import { CreditCard, FolderTree, LayoutDashboard, LogOut, Menu, Package, Plus, ShoppingCart, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
@@ -13,8 +13,10 @@ type NavItem = { href: string; label: string; icon: typeof Package; permission?:
 
 const NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingCart, permission: "orders" },
   { href: "/admin/products", label: "Products", icon: Package, permission: "products" },
   { href: "/admin/categories", label: "Categories", icon: FolderTree, permission: "categories" },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard, permission: "payments" },
 ];
 
 function useActive() {
@@ -106,8 +108,12 @@ export function AdminShell({ user, children }: { user: StaffUser; children: Reac
         <main className="flex-1 px-4 pt-5 pb-28 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">{children}</main>
 
         {/* Mobile bottom tabs */}
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label="Admin tabs">
-          {items.map((item) => (
+        <nav
+          className="fixed inset-x-0 bottom-0 z-30 grid border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+          style={{ gridTemplateColumns: `repeat(${Math.min(items.length, 4)}, minmax(0, 1fr))` }}
+          aria-label="Admin tabs"
+        >
+          {items.slice(0, 4).map((item) => (
             <Link
               key={item.href}
               href={item.href}
