@@ -13,7 +13,7 @@ _Last updated: 2026-11-14_
 | 4. Auth, owner/staff roles & authorization | ☐ |
 | 5. Admin dashboard | ☐ |
 | 6. Product & category management | ☐ |
-| 7. Image management (Cloudinary/ImageKit) | ☐ |
+| 7. Image management (ImageKit) | ☐ |
 | 8. Cart & checkout | ☐ |
 | 9. Razorpay integration | ☐ |
 | 10. Order & payment management | ☐ |
@@ -46,7 +46,7 @@ _Last updated: 2026-11-14_
 See CLAUDE.md → "Owner decisions" and "Still open".
 
 ## Waiting on owner
-- **Razorpay**: keys in `.env.local` are LIVE and were rejected (HTTP 401). Need `rzp_test_` key id + secret from Dashboard (Test Mode) → API Keys, and a strong webhook secret
+- **Razorpay**: owner will provide new LIVE key id + secret (current ones rejected with 401) and a strong webhook secret. Needed for Phase 9
 - **Owner password**: `OWNER_SEED_PASSWORD` must be at least 8 characters
 - **Resend**: key valid but no verified domain, so use `onboarding@resend.dev` until a domain is verified
 - Recommended: create a dedicated DB user instead of `doadmin`
