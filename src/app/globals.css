@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/*
+ * Vevvion design tokens — black background, green text (owner decision).
+ * Single dark theme across storefront and admin.
+ */
+:root {
+  --bg: #0a0a0a;
+  --surface: #121212;
+  --surface-2: #181a18;
+  --border: #1f2a22;
+  --border-strong: #2c3d31;
+  --text: #4ade80; /* primary green text, ~11:1 on --bg */
+  --text-strong: #86efac;
+  --text-muted: #6fbf8a;
+  --accent: #22c55e;
+  --accent-hover: #16a34a;
+  --accent-contrast: #04140a; /* text on green buttons */
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --info: #67e8f9;
+  --ring: #4ade80;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-strong: var(--text-strong);
+  --color-fg-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-sans-app);
+  --font-display: var(--font-display-app);
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans-app), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

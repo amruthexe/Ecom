@@ -1,0 +1,612 @@
+# MASTER PROJECT PROMPT
+## Build a Production-Ready Full-Stack E-Commerce Platform
+
+Act as a Senior Software Architect, Senior Full-Stack Engineer, UI/UX Designer, Database Architect, Security Engineer and QA Engineer.
+
+Your task is to design and develop a modern, premium, production-ready e-commerce platform using Next.js.
+
+You must think like an experienced engineering team. Do not simply generate code. Plan the architecture, build modularly, validate every feature, test the application and maintain proper documentation.
+
+---
+
+# 1. PROJECT OBJECTIVE
+
+Build a complete e-commerce website with two major interfaces:
+
+1. Customer-facing online shopping website.
+2. Powerful admin dashboard for managing the entire business.
+
+The store owner must be able to operate the business without editing source code.
+
+The owner should be able to:
+- Add new products.
+- Edit existing products.
+- Delete or archive products.
+- Upload and change product images.
+- Manage categories.
+- Manage product prices and discounts.
+- Manage inventory.
+- View all customer orders.
+- View payment transactions.
+- Update order statuses.
+- Manage customers.
+- Create discount coupons.
+- View sales analytics.
+- Manage homepage banners and content.
+- Manage shipping and store settings.
+
+The customer should be able to:
+- Browse products.
+- Search and filter products.
+- View product details.
+- Add products to cart.
+- Manage cart quantities.
+- Add delivery addresses.
+- Checkout securely.
+- Pay through Razorpay.
+- View order history.
+- Track orders.
+- Manage their profile.
+
+The complete application must be responsive and optimized for desktop, tablet and mobile.
+
+# 2. TECHNOLOGY STACK
+
+Use the following technologies:
+
+Frontend:
+- Next.js 15+ with App Router.
+- TypeScript.
+- Tailwind CSS.
+- Framer Motion.
+- Lucide React icons.
+- Reusable UI components.
+
+Backend:
+- Next.js Route Handlers.
+- Server-side business logic.
+- MongoDB Atlas.
+- Mongoose.
+
+Authentication:
+- Secure authentication with customer and admin roles.
+- Use a maintained authentication solution such as Better Auth or Auth.js after evaluating compatibility.
+- Secure password hashing.
+- Server-side authorization.
+- Protected admin routes and APIs.
+
+Payments:
+- Razorpay Standard Checkout.
+- Razorpay Orders API.
+- Server-side payment verification.
+- Razorpay webhooks.
+- Refund handling.
+
+Image storage:
+- Cloudinary as the primary image provider.
+- ImageKit may be considered as an alternative, but do not implement both unless there is a clear requirement.
+- Secure uploads.
+- Image optimization.
+- Multiple image uploads.
+- Store image URL and public ID in MongoDB.
+
+Deployment:
+- Vercel for Next.js.
+- MongoDB Atlas for database.
+- Cloudinary for media storage.
+
+# 3. DESIGN REQUIREMENTS
+
+The website must have a premium, modern, professional design.
+
+Design direction:
+- Clean and elegant layout.
+- White or neutral background.
+- Strong typography.
+- Beautiful product cards.
+- Professional navigation.
+- Consistent spacing.
+- Subtle shadows.
+- Smooth transitions.
+- Responsive layouts.
+- Excellent mobile experience.
+
+Use Framer Motion for:
+- Page transitions.
+- Product card interactions.
+- Navigation animations.
+- Modal animations.
+- Cart interactions.
+- Dashboard transitions.
+- Loading and reveal animations.
+
+Do not overuse animations.
+
+Avoid:
+- Unnecessary gradients.
+- Excessive shadows.
+- Overcrowded layouts.
+- Inconsistent spacing.
+- Generic template appearance.
+- Horizontal overflow.
+- Poor mobile layouts.
+
+Build a consistent design system with reusable buttons, inputs, cards, tables, dialogs, badges and navigation components.
+
+# 4. CUSTOMER WEBSITE MODULES
+
+Create the following routes:
+
+/
+Homepage with:
+- Hero section.
+- Promotional banners.
+- Featured products.
+- New arrivals.
+- Best sellers.
+- Categories.
+- Promotional sections.
+- Newsletter section.
+- Footer.
+
+ /products
+- Product listing.
+- Search.
+- Category filtering.
+- Price filtering.
+- Sorting.
+- Pagination.
+
+ /products/[slug]
+- Product images.
+- Image gallery.
+- Product description.
+- Price and discounted price.
+- Variants such as size and colour.
+- Stock availability.
+- Quantity selector.
+- Add to cart.
+- Related products.
+
+ /categories/[slug]
+- Category-specific products.
+
+ /cart
+- Cart items.
+- Quantity management.
+- Remove products.
+- Price calculation.
+- Coupon application.
+
+ /checkout
+- Customer information.
+- Delivery address.
+- Order summary.
+- Payment method.
+- Razorpay checkout.
+
+ /payment/success
+- Payment confirmation.
+- Order details.
+
+ /payment/failed
+- Payment failure information.
+- Retry payment option.
+
+ /my-orders
+- Customer order history.
+
+ /my-orders/[id]
+- Order details.
+- Payment details.
+- Delivery status.
+
+ /account
+- Customer profile.
+- Address management.
+
+Also implement:
+- Wishlist.
+- Guest checkout.
+- Search suggestions.
+- Empty states.
+- Loading skeletons.
+- Error pages.
+- 404 page.
+
+# 5. ADMIN DASHBOARD
+
+Create a separate admin portal under /admin.
+
+Admin modules:
+
+A. Dashboard
+- Total revenue.
+- Total orders.
+- Total products.
+- Total customers.
+- Pending orders.
+- Low-stock products.
+- Recent transactions.
+- Recent orders.
+- Sales charts.
+- Date-range filtering.
+
+B. Product management
+
+Create a complete CRUD system.
+
+Admin must be able to:
+- Add products.
+- Edit products.
+- Delete or archive products.
+- Upload multiple product images.
+- Change image order.
+- Select a featured image.
+- Add product descriptions.
+- Set regular prices.
+- Set sale prices.
+- Manage inventory.
+- Add SKU.
+- Add categories.
+- Add tags.
+- Manage product variants.
+- Enable or disable products.
+
+C. Category management
+- Create categories.
+- Edit categories.
+- Delete categories safely.
+- Upload category images.
+- Manage category slugs.
+
+D. Order management
+
+Display all orders in a professional table.
+
+Show:
+- Order ID.
+- Customer name.
+- Email.
+- Phone.
+- Products.
+- Quantity.
+- Total amount.
+- Payment status.
+- Order date.
+- Delivery address.
+- Shipping status.
+
+Allow admins to:
+- View complete order details.
+- Update order status.
+- Confirm orders.
+- Process orders.
+- Mark orders as packed.
+- Mark orders as shipped.
+- Mark orders as delivered.
+- Cancel orders.
+- Initiate refunds.
+- View payment details.
+
+E. Payment management
+- Successful payments.
+- Failed payments.
+- Pending payments.
+- Razorpay payment ID.
+- Razorpay order ID.
+- Transaction amount.
+- Refund status.
+- Transaction date.
+
+F. Customer management
+- Customer listing.
+- Customer profile.
+- Order history.
+- Customer contact details.
+- Account status.
+
+G. Coupon management
+- Create discount coupons.
+- Percentage discounts.
+- Fixed discounts.
+- Expiry dates.
+- Usage limits.
+- Minimum order amount.
+- Active/inactive status.
+
+H. Inventory management
+- Available stock.
+- Low-stock alerts.
+- Stock adjustments.
+- Stock movement history.
+- SKU management.
+
+I. Analytics
+- Daily sales.
+- Monthly sales.
+- Revenue.
+- Orders.
+- Best-selling products.
+- Category performance.
+- Customer statistics.
+
+J. Store settings
+- Store name.
+- Logo.
+- Contact information.
+- Social media links.
+- Homepage banners.
+- Shipping charges.
+- Free shipping threshold.
+- Tax settings.
+- Currency settings.
+- Notification settings.
+
+# 6. CLOUDINARY IMAGE MANAGEMENT
+
+Implement secure Cloudinary integration.
+
+Requirements:
+
+1. Admin selects images from their device.
+2. Validate file type and size.
+3. Upload securely using server-generated signatures.
+4. Display upload progress.
+5. Generate image previews.
+6. Allow multiple image uploads.
+7. Allow image removal.
+8. Save Cloudinary URL and public ID in MongoDB.
+9. Support image transformations and optimized delivery.
+10. Clean up unused assets when products or images are removed.
+
+Never expose Cloudinary API secrets in frontend code.
+
+# 7. RAZORPAY PAYMENT INTEGRATION
+
+This is a critical module. Implement it carefully.
+
+Payment workflow:
+
+Step 1:
+Customer adds products to cart.
+
+Step 2:
+Customer proceeds to checkout.
+
+Step 3:
+Backend fetches current product prices from MongoDB.
+
+Step 4:
+Backend calculates the actual payable amount.
+
+Step 5:
+Create a pending order and Razorpay order through the server.
+
+Step 6:
+Open Razorpay Checkout.
+
+Step 7:
+Customer completes payment.
+
+Step 8:
+Backend verifies Razorpay payment signature.
+
+Step 9:
+Verify payment status and amount.
+
+Step 10:
+Process Razorpay webhooks.
+
+Step 11:
+Update payment and order status.
+
+Step 12:
+Update inventory safely and display the confirmed order in the admin dashboard.
+
+Important security requirements:
+- Never trust frontend payment amounts.
+- Never mark an order as paid based only on a frontend callback.
+- Verify payment signatures on the server.
+- Verify webhook signatures using the raw request body.
+- Handle duplicate webhook events idempotently.
+- Handle delayed payment confirmations.
+- Handle failed payments.
+- Handle payment retries.
+- Implement refund tracking.
+- Prevent duplicate stock deductions.
+- Store Razorpay identifiers in MongoDB.
+- Never expose Razorpay secret keys.
+
+Support Razorpay test mode first.
+
+Do not switch to live payments until the complete payment flow has been tested.
+
+# 8. DATABASE ARCHITECTURE
+
+Use MongoDB with Mongoose.
+
+Create properly structured models for:
+
+- User
+- Product
+- Category
+- Order
+- Payment
+- Cart
+- Coupon
+- Review
+- Address
+- InventoryTransaction
+- StoreSettings
+- WebhookEvent
+
+Requirements:
+- Proper schema validation.
+- Required fields.
+- Unique indexes.
+- Database indexes for frequently queried fields.
+- Timestamps.
+- Safe relationships.
+- Pagination.
+- Efficient queries.
+
+Order records must store product snapshots, including product name, SKU, price and quantity at purchase time.
+
+Do not depend on current product prices when displaying historical orders.
+
+Use database transactions where supported and appropriate. Implement safe inventory handling for concurrent purchases.
+
+# 9. SECURITY REQUIREMENTS
+
+Treat security as a core requirement.
+
+Implement:
+
+- Server-side role-based authorization.
+- Protected admin APIs.
+- Secure authentication sessions.
+- Input validation using Zod.
+- Server-side price calculations.
+- Secure environment variables.
+- Webhook signature verification.
+- Secure file uploads.
+- Rate limiting on sensitive endpoints.
+- Safe error handling.
+- Protection against unauthorized data access.
+- Ownership checks for customer orders.
+- Audit logs for important admin actions.
+
+Never rely only on middleware or hidden frontend navigation for authorization. Verify permissions inside protected server-side operations.
+
+# 10. CODE QUALITY RULES
+
+Follow these rules throughout development:
+
+1. Use TypeScript strictly.
+2. Avoid unnecessary use of any.
+3. Create reusable components.
+4. Keep business logic separate from UI components.
+5. Avoid duplicate code.
+6. Use proper naming conventions.
+7. Use server components by default.
+8. Use client components only when required.
+9. Keep API handlers clean.
+10. Handle loading, success and error states.
+11. Use proper database connection management.
+12. Avoid unnecessary dependencies.
+13. Do not introduce breaking changes without checking existing modules.
+14. Do not overwrite working features unnecessarily.
+15. Never claim a feature works without testing it.
+
+# 11. PROJECT DOCUMENTATION
+
+Maintain these files:
+
+CLAUDE.md
+PROJECT_STATUS.md
+ARCHITECTURE.md
+DATABASE_SCHEMA.md
+API_DOCUMENTATION.md
+SECURITY.md
+TESTING_CHECKLIST.md
+DEPLOYMENT_GUIDE.md
+
+Update PROJECT_STATUS.md after every completed development phase.
+
+Document:
+- Completed modules.
+- Pending modules.
+- Known bugs.
+- Important decisions.
+- Environment variables.
+- Testing results.
+
+# 12. TESTING REQUIREMENTS
+
+Use appropriate testing tools such as Vitest and Playwright.
+
+Test:
+- Authentication.
+- Admin authorization.
+- Product CRUD.
+- Image uploads.
+- Cart calculations.
+- Coupon calculations.
+- Stock availability.
+- Checkout.
+- Payment signature verification.
+- Webhook processing.
+- Duplicate webhook handling.
+- Order status changes.
+- Refund handling.
+- Mobile responsiveness.
+
+Do not use real payments during automated tests.
+
+Use Razorpay test credentials and test transactions.
+
+# 13. DEVELOPMENT WORKFLOW
+
+IMPORTANT: Do not build the entire application in one attempt.
+
+Follow these phases:
+
+PHASE 1: Project setup and architecture.
+PHASE 2: Design system and storefront.
+PHASE 3: MongoDB and database models.
+PHASE 4: Authentication and admin authorization.
+PHASE 5: Admin dashboard.
+PHASE 6: Product and category management.
+PHASE 7: Cloudinary image management.
+PHASE 8: Cart and checkout.
+PHASE 9: Razorpay integration.
+PHASE 10: Order and payment management.
+PHASE 11: Customer accounts and notifications.
+PHASE 12: Analytics, security and optimization.
+PHASE 13: Testing and deployment.
+
+Complete and test each phase before proceeding.
+
+# 14. GIT AND VERSION CONTROL
+
+Use Git throughout development.
+
+- Initialize Git if not already initialized.
+- Create meaningful commits after working modules.
+- Never commit .env.local.
+- Never expose credentials.
+- Avoid destructive Git operations.
+- Preserve working code.
+- Review changes before major refactoring.
+
+# 15. YOUR FIRST TASK
+
+DO NOT START CODING THE ENTIRE WEBSITE IMMEDIATELY.
+
+First perform the following tasks:
+
+1. Analyze the complete project requirements.
+2. Identify architectural risks.
+3. Recommend the final architecture.
+4. Propose the database schemas.
+5. Propose the API route structure.
+6. Propose the folder structure.
+7. Identify security risks.
+8. Identify payment integration risks.
+9. Prepare the development roadmap.
+10. List required environment variables.
+11. Identify any missing business decisions.
+12. Create the initial project documentation.
+
+If the project directory is empty, prepare the initial setup plan.
+
+If an existing project is present, inspect it before changing anything.
+
+Present the architecture and implementation plan first.
+
+Wait for my approval before beginning Phase 1.
+
+Act as a senior engineer responsible for delivering a reliable production application, not just a visually impressive demo.
+
+**PRIMARY GOAL: A secure, scalable, beautiful, fully functional e-commerce platform where the store owner can manage the entire business through the admin portal without needing developer assistance.**
