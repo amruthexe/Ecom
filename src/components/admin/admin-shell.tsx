@@ -47,7 +47,7 @@ export function AdminShell({ user, children }: { user: StaffUser; children: Reac
             isActive(item) ? "bg-accent/10 text-fg-strong" : "text-fg-muted hover:bg-surface-2 hover:text-fg-strong",
           )}
         >
-          <item.icon className="size-4" />
+          <item.icon className={cn("size-4 text-accent", !isActive(item) && "opacity-75")} />
           {item.label}
         </Link>
       ))}
@@ -93,7 +93,7 @@ export function AdminShell({ user, children }: { user: StaffUser; children: Reac
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-bg/90 px-3 backdrop-blur lg:hidden">
           <button onClick={() => setOpen(true)} className="rounded-md p-2 text-fg hover:bg-surface-2" aria-label="Open admin menu">
-            <Menu className="size-5" />
+            <Menu className="size-5 text-accent" />
           </button>
           <Link href="/admin" aria-label="Admin dashboard">
             <BrandLogo variant="horizontal" className="h-6 w-auto" />
@@ -126,7 +126,7 @@ export function AdminShell({ user, children }: { user: StaffUser; children: Reac
               aria-current={isActive(item) ? "page" : undefined}
               className={cn("flex flex-col items-center gap-1 py-2.5 text-[11px]", isActive(item) ? "text-fg-strong" : "text-fg-muted")}
             >
-              <item.icon className={cn("size-5", isActive(item) && "text-accent")} />
+              <item.icon className={cn("size-5 text-accent", !isActive(item) && "opacity-60")} />
               {item.label}
             </Link>
           ))}

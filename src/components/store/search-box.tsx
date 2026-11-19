@@ -68,7 +68,7 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
         go(term ? `/products?q=${encodeURIComponent(term)}` : "/products");
       }}
     >
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-muted" />
+      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-accent" />
       <input
         name="q"
         type="search"

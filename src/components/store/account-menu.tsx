@@ -16,7 +16,7 @@ export async function AccountMenu() {
         </Link>
       ) : (
         <Link href="/account/login" className="flex items-center gap-1.5 rounded-md p-2 text-fg hover:bg-surface-2 hover:text-fg-strong" aria-label="Log in">
-          <User className="size-5" />
+          <User className="size-5 text-accent" />
           <span className="hidden text-sm lg:inline">Log in</span>
         </Link>
       )}
@@ -27,7 +27,7 @@ export async function AccountMenu() {
 export function AccountMenuFallback() {
   return (
     <span className="rounded-md p-2 text-fg-muted" aria-hidden>
-      <User className="size-5" />
+      <User className="size-5 text-accent" />
     </span>
   );
 }

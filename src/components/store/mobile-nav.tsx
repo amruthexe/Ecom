@@ -25,7 +25,7 @@ export function MobileNav({ categories }: { categories: Category[] }) {
         aria-label="Open menu"
         aria-expanded={open}
       >
-        <Menu className="size-6" />
+        <Menu className="size-6 text-accent" />
       </button>
       <Sheet
         open={open}
@@ -89,8 +89,8 @@ export function MobileNav({ categories }: { categories: Category[] }) {
           <section>
             <SectionLabel>Your account</SectionLabel>
             <div className="grid grid-cols-3 gap-2">
-              <Tile href="/my-orders" onClick={close} icon={<Package className="size-5" />} label="Orders" active={pathname.startsWith("/my-orders")} />
-              <Tile href="/account" onClick={close} icon={<User className="size-5" />} label="Account" active={pathname.startsWith("/account")} />
+              <Tile href="/my-orders" onClick={close} icon={<Package className="size-5 text-accent" />} label="Orders" active={pathname.startsWith("/my-orders")} />
+              <Tile href="/account" onClick={close} icon={<User className="size-5 text-accent" />} label="Account" active={pathname.startsWith("/account")} />
               <Tile
                 href="/cart"
                 onClick={close}
@@ -98,7 +98,7 @@ export function MobileNav({ categories }: { categories: Category[] }) {
                 label="Cart"
                 icon={
                   <span className="relative">
-                    <ShoppingBag className="size-5" />
+                    <ShoppingBag className="size-5 text-accent" />
                     {count > 0 && (
                       <span className="absolute -top-2 -right-2.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-contrast tabular-nums">
                         {count > 99 ? "99+" : count}
@@ -118,7 +118,7 @@ export function MobileNav({ categories }: { categories: Category[] }) {
 export function MobileNavFallback() {
   return (
     <span className="-ml-2 rounded-md p-2 text-fg lg:hidden" aria-hidden>
-      <Menu className="size-6" />
+      <Menu className="size-6 text-accent" />
     </span>
   );
 }

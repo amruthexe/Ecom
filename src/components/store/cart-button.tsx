@@ -13,7 +13,7 @@ export function CartButton() {
       className="relative rounded-md p-2 text-fg hover:bg-surface-2 hover:text-fg-strong"
       aria-label={count ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
     >
-      <ShoppingBag className="size-5" />
+      <ShoppingBag className="size-5 text-accent" />
       <AnimatePresence>
         {count > 0 && (
           <motion.span
