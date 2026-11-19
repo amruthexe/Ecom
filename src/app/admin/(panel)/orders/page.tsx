@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AlertTriangle, ChevronLeft, ChevronRight, Search, ShoppingCart } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, Search, ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
 import { OrderStatusBadge, PaymentStatusText } from "@/components/admin/order-badges";
 import { PageHeader, inputCls } from "@/components/admin/ui";
@@ -9,51 +9,74 @@ import { formatDateTime } from "@/lib/format";
 import { formatPaise } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { requireStaffPage } from "@/server/auth";
-import { listOrders, type OrderFilter } from "@/server/services/sales";
+import { ORDER_FILTER_TABS as TABS, orderListQuery, parseOrderListParams, type OrderFilter } from "@/lib/order-filters";
+import { listOrders } from "@/server/services/sales";
 
 // Admin pages always check the signed-in user on the server before rendering, so they block by design.
 export const instant = false;
 
 export const metadata: Metadata = { title: "Orders" };
 
-const TABS: { value: OrderFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "to_fulfil", label: "To fulfil" },
-  { value: "shipped", label: "Shipped" },
-  { value: "delivered", label: "Delivered" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "unpaid", label: "Unpaid / failed" },
-  { value: "attention", label: "Needs attention" },
-];
-
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/orders">) {
   await requireStaffPage("orders");
   const sp = await searchParams;
-  const q = first(sp.q)?.trim().slice(0, 80) || undefined;
-  const f = first(sp.filter);
-  const filter: OrderFilter = TABS.some((t) => t.value === f) ? (f as OrderFilter) : "all";
+  const params = parseOrderListParams(sp);
+  const { filter, q, from, to } = params;
   const page = Math.max(1, Number(first(sp.page)) || 1);
-  const { rows, total, pages } = await listOrders({ filter, q, page });
+  const { rows, total, pages } = await listOrders({ ...params, page });
+  const hasDates = Boolean(from || to);
 
   const href = (over: { filter?: OrderFilter; page?: number }) => {
-    const p = new URLSearchParams();
-    const fl = over.filter ?? filter;
-    if (fl !== "all") p.set("filter", fl);
-    if (q) p.set("q", q);
-    if (over.page && over.page > 1) p.set("page", String(over.page));
-    const s = p.toString();
+    const s = orderListQuery({ ...params, filter: over.filter ?? filter }, { page: over.page && over.page > 1 ? over.page : undefined });
     return s ? `/admin/orders?${s}` : "/admin/orders";
   };
+  // Exports use exactly the filters on screen (all matching orders, not just this page).
+  const exportHref = (format: "xlsx" | "pdf") => `/api/admin/orders/export?${orderListQuery(params, { format })}`;
 
   return (
     <>
-      <PageHeader title="Orders" description={`${total} order${total === 1 ? "" : "s"}`} />
-      <form action="/admin/orders" className="relative mb-4">
+      <PageHeader
+        title="Orders"
+        description={`${total} order${total === 1 ? "" : "s"}${q || filter !== "all" || hasDates ? " match your filters" : ""}`}
+        actions={
+          <>
+            <a href={exportHref("xlsx")} download className={cn(buttonClasses("secondary", "sm"), total === 0 && "pointer-events-none opacity-40")} aria-disabled={total === 0}>
+              <FileSpreadsheet className="size-4" /> Excel
+            </a>
+            <a href={exportHref("pdf")} download className={cn(buttonClasses("secondary", "sm"), total === 0 && "pointer-events-none opacity-40")} aria-disabled={total === 0}>
+              <FileText className="size-4" /> PDF
+            </a>
+          </>
+        }
+      />
+      <form action="/admin/orders" className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
         {filter !== "all" && <input type="hidden" name="filter" value={filter} />}
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-muted" />
-        <input name="q" type="search" defaultValue={q} placeholder="Order no., name, email or phone" className={cn(inputCls, "pl-9")} aria-label="Search orders" />
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-muted" />
+          <input name="q" type="search" defaultValue={q} placeholder="Order no., name, email or phone" className={cn(inputCls, "pl-9")} aria-label="Search orders" />
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:contents">
+          <label className="block">
+            <span className="mb-1 block text-xs text-fg-muted">From</span>
+            <input type="date" name="from" defaultValue={from} className={cn(inputCls, "[color-scheme:dark]")} />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs text-fg-muted">To</span>
+            <input type="date" name="to" defaultValue={to} className={cn(inputCls, "[color-scheme:dark]")} />
+          </label>
+        </div>
+        <div className="flex gap-2">
+          <button type="submit" className={cn(buttonClasses("primary"), "flex-1 sm:flex-none")}>
+            Apply
+          </button>
+          {(q || hasDates) && (
+            <Link href={filter === "all" ? "/admin/orders" : `/admin/orders?filter=${filter}`} className={buttonClasses("secondary")} aria-label="Clear search and dates">
+              <X className="size-4" />
+            </Link>
+          )}
+        </div>
       </form>
       <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         {TABS.map((t) => (
@@ -71,7 +94,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState icon={<ShoppingCart className="size-10" />} title={q || filter !== "all" ? "No orders match" : "No orders yet"} description="Paid orders appear here as soon as customers check out." />
+        <EmptyState icon={<ShoppingCart className="size-10" />} title={q || filter !== "all" || hasDates ? "No orders match" : "No orders yet"} description="Paid orders appear here as soon as customers check out." />
       ) : (
         <>
           <ul className="space-y-2 md:hidden">

@@ -1,5 +1,6 @@
 import "server-only";
 import { Types } from "mongoose";
+import type { OrderFilter, OrderListParams } from "@/lib/order-filters";
 import type { OrderStatus, PaymentStatus } from "@/lib/orders";
 import { connectDB } from "../db";
 import { Order, type OrderDoc } from "../models/order";
@@ -26,7 +27,7 @@ export type OrderRow = {
   createdAt: string;
 };
 
-export type OrderFilter = "all" | "to_fulfil" | "shipped" | "delivered" | "unpaid" | "cancelled" | "attention";
+export type { OrderFilter } from "@/lib/order-filters";
 
 const FILTERS: Record<OrderFilter, Record<string, unknown>> = {
   all: { status: { $nin: ["pending_payment", "expired"] } },
@@ -38,13 +39,25 @@ const FILTERS: Record<OrderFilter, Record<string, unknown>> = {
   attention: { needsAttention: { $exists: true, $ne: "" } },
 };
 
-export async function listOrders(params: { filter?: OrderFilter; q?: string; page?: number }) {
-  await connectDB();
+/** Mongo filter for the admin order list (status tab + search + India-time date range on order date). */
+function buildOrderQuery(params: Partial<OrderListParams>): Record<string, unknown> {
   const filter: Record<string, unknown> = { ...FILTERS[params.filter ?? "all"] };
   if (params.q) {
     const rx = new RegExp(escapeRegex(params.q.slice(0, 80)), "i");
     filter.$or = [{ orderNumber: rx }, { "contact.name": rx }, { "contact.email": rx }, { "contact.phone": rx }];
   }
+  if (params.from || params.to) {
+    const range: Record<string, Date> = {};
+    if (params.from) range.$gte = new Date(`${params.from}T00:00:00+05:30`);
+    if (params.to) range.$lt = new Date(new Date(`${params.to}T00:00:00+05:30`).getTime() + 86_400_000);
+    filter.createdAt = range;
+  }
+  return filter;
+}
+
+export async function listOrders(params: Partial<OrderListParams> & { page?: number }) {
+  await connectDB();
+  const filter = buildOrderQuery(params);
   const page = Math.max(1, params.page ?? 1);
   const [docs, total] = await Promise.all([
     Order.find(filter).sort({ createdAt: -1 }).skip((page - 1) * ORDERS_PAGE_SIZE).limit(ORDERS_PAGE_SIZE).lean<OrderDoc[]>(),
@@ -200,4 +213,84 @@ export async function getSalesOverview(days = 14) {
   });
   const sum = (n: number) => series.slice(-n).reduce((a, d) => ({ revenue: a.revenue + d.revenuePaise, orders: a.orders + d.orders }), { revenue: 0, orders: 0 });
   return { series, today: sum(1), week: sum(7), period: sum(days), toFulfil, attention, unpaid24h, recent: recent.rows.slice(0, 6) };
+}
+
+/** Hard cap so one export can't load an unbounded number of orders into memory. */
+export const ORDER_EXPORT_LIMIT = 5000;
+
+export type OrderExportRow = {
+  orderNumber: string;
+  createdAt: Date;
+  paidAt?: Date;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  customer: string;
+  email: string;
+  phone: string;
+  accountOrder: boolean;
+  address: { name: string; phone: string; line1: string; line2?: string; landmark?: string; city: string; state: string; pincode: string; country: string };
+  items: { name: string; sku?: string; options?: string; qty: number; unitMrpPaise: number; unitPricePaise: number; lineTotalPaise: number }[];
+  itemCount: number;
+  mrpTotalPaise: number;
+  subtotalPaise: number;
+  discountPaise: number;
+  shippingPaise: number;
+  gstPaise: number;
+  gstRatePercent: number;
+  totalPaise: number;
+  refundedPaise: number;
+  paymentMethod?: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  trackingNote?: string;
+  cancelReason?: string;
+  needsAttention?: string;
+};
+
+/** Every order matching the admin filters (newest first, capped), with full details for Excel/PDF export. */
+export async function listOrdersForExport(params: OrderListParams): Promise<{ rows: OrderExportRow[]; total: number; truncated: boolean }> {
+  await connectDB();
+  const filter = buildOrderQuery(params);
+  const [docs, total] = await Promise.all([
+    Order.find(filter).sort({ createdAt: -1 }).limit(ORDER_EXPORT_LIMIT).lean<OrderDoc[]>(),
+    Order.countDocuments(filter),
+  ]);
+  const payments = docs.length
+    ? await Payment.find({ orderId: { $in: docs.map((d) => d._id) } }).sort({ createdAt: 1 }).lean<PaymentDoc[]>()
+    : [];
+  // Latest payment attempt per order (sorted ascending, so later ones overwrite).
+  const byOrder = new Map(payments.map((p) => [String(p.orderId), p]));
+  const rows = docs.map((o): OrderExportRow => {
+    const p = byOrder.get(String(o._id));
+    const a = o.shippingAddress;
+    return {
+      orderNumber: o.orderNumber,
+      createdAt: o.createdAt,
+      paidAt: o.paidAt,
+      status: o.status,
+      paymentStatus: o.paymentStatus,
+      customer: o.contact.name,
+      email: o.contact.email,
+      phone: o.contact.phone,
+      accountOrder: Boolean(o.userId),
+      address: { name: a.name, phone: a.phone, line1: a.line1, line2: a.line2, landmark: a.landmark, city: a.city, state: a.state, pincode: a.pincode, country: a.country },
+      items: o.items.map((i) => ({ name: i.name, sku: i.sku, options: i.options, qty: i.qty, unitMrpPaise: i.unitMrpPaise, unitPricePaise: i.unitPricePaise, lineTotalPaise: i.lineTotalPaise })),
+      itemCount: o.items.reduce((n, i) => n + i.qty, 0),
+      mrpTotalPaise: o.pricing.mrpTotalPaise,
+      subtotalPaise: o.pricing.subtotalPaise,
+      discountPaise: Math.max(0, o.pricing.mrpTotalPaise - o.pricing.subtotalPaise),
+      shippingPaise: o.pricing.shippingPaise,
+      gstPaise: o.pricing.gstPaise,
+      gstRatePercent: o.pricing.gstRatePercent,
+      totalPaise: o.pricing.totalPaise,
+      refundedPaise: o.refundedPaise ?? 0,
+      paymentMethod: p?.method,
+      razorpayOrderId: o.razorpayOrderId,
+      razorpayPaymentId: p?.razorpayPaymentId,
+      trackingNote: o.trackingNote,
+      cancelReason: o.cancelReason,
+      needsAttention: o.needsAttention || undefined,
+    };
+  });
+  return { rows, total, truncated: total > rows.length };
 }
