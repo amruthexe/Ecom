@@ -30,15 +30,15 @@ export function ProductArt({ seed, label, className }: { seed: string; label?: s
       className={cn("h-full w-full bg-surface-2", className)}
       preserveAspectRatio="xMidYMid slice"
     >
-      <rect width="400" height="500" fill="#101310" />
-      <g stroke="#22c55e" fill="none" strokeWidth="1.25">
+      <rect width="400" height="500" fill="#11140e" />
+      <g stroke="#8ac504" fill="none" strokeWidth="1.25">
         {pattern === 0 &&
           [0, 1, 2, 3, 4, 5].map((i) => <circle key={i} cx={cx} cy={cy} r={Math.max(2, r - i * 12)} opacity={0.75 - i * 0.11} />)}
         {pattern === 1 && (
           <g transform={`rotate(${rot} ${cx} ${cy})`}>
             <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} opacity={0.7} />
             <rect x={cx - r * 0.66} y={cy - r * 0.66} width={r * 1.33} height={r * 1.33} opacity={0.45} />
-            <rect x={cx - r * 0.33} y={cy - r * 0.33} width={r * 0.66} height={r * 0.66} fill="#22c55e" fillOpacity={0.12} opacity={0.6} />
+            <rect x={cx - r * 0.33} y={cy - r * 0.33} width={r * 0.66} height={r * 0.66} fill="#8ac504" fillOpacity={0.12} opacity={0.6} />
           </g>
         )}
         {pattern === 2 &&
@@ -54,7 +54,7 @@ export function ProductArt({ seed, label, className }: { seed: string; label?: s
                   cx={60 + col * 56}
                   cy={90 + row * 56}
                   r={2 + ((row + col + (h % 5)) % 4) * 2.5}
-                  fill="#22c55e"
+                  fill="#8ac504"
                   fillOpacity={0.25 + ((row * col) % 3) * 0.2}
                   stroke="none"
                 />
@@ -63,7 +63,7 @@ export function ProductArt({ seed, label, className }: { seed: string; label?: s
           </>
         )}
       </g>
-      <text x="24" y="474" fill="#4ade80" opacity="0.5" fontSize="13" letterSpacing="4" fontFamily="var(--font-poppins), sans-serif">
+      <text x="24" y="474" fill="#a8d15a" opacity="0.5" fontSize="13" letterSpacing="4" fontFamily="var(--font-poppins), sans-serif">
         VEVVION
       </text>
     </svg>

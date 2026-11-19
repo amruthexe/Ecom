@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from "react";
  * flutter down. Pure canvas (no dependency), pointer-events none, ~5 s, then removed.
  * Plays once per order per browser session and never for users who prefer reduced motion.
  */
-const COLORS = ["#22c55e", "#4ade80", "#86efac", "#facc15", "#fb7185", "#f472b6", "#ffffff", "#fde68a", "#a3e635"];
+// Logo greens (lime, leaf, forest tint) + festive accents.
+const COLORS = ["#8ac504", "#6b9f17", "#a8d15a", "#cfe8a0", "#facc15", "#fb7185", "#f472b6", "#ffffff", "#fde68a"];
 const FLOWER_COLORS = ["#fb7185", "#f472b6", "#facc15", "#ffffff", "#c084fc"];
 
 type Kind = "paper" | "dot" | "flower";

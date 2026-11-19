@@ -10,7 +10,7 @@ const rupees = (paise: number) => Math.round(paise) / 100;
 
 const MONEY = '"₹"#,##0.00';
 const DATE_TIME = "dd-mmm-yyyy hh:mm";
-const GREEN = "FF16A34A";
+const GREEN = "FF3D6936"; // logo forest green (VEVVION lettering)
 const HEADER_FONT = { bold: true, color: { argb: "FFFFFFFF" } } as const;
 
 export function fullAddress(a: OrderExportRow["address"]): string {

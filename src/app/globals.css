@@ -2,24 +2,30 @@
 
 /*
  * Vevvion design tokens — black background, green text (owner decision).
+ * Greens are taken from the logo (owner request, 2026-11-19):
+ *   lime   #8AC504  top of the leaf      → buttons, links, focus
+ *   leaf   #6B9F17  middle of the leaf   → hover
+ *   forest #3D6936  "VEVVION" lettering  → borders/fills only (too dark for text on black)
+ * Text tints are lighter shades of the same yellow-green so they stay readable (all ≥ 7:1 on --bg).
  * Single dark theme across storefront and admin.
  */
 :root {
   --bg: #0a0a0a;
-  --surface: #121212;
-  --surface-2: #181a18;
-  --border: #1f2a22;
-  --border-strong: #2c3d31;
-  --text: #4ade80; /* primary green text, ~11:1 on --bg */
-  --text-strong: #86efac;
-  --text-muted: #6fbf8a;
-  --accent: #22c55e;
-  --accent-hover: #16a34a;
-  --accent-contrast: #04140a; /* text on green buttons */
+  --surface: #131510;
+  --surface-2: #1a1e15;
+  --border: #252e1c;
+  --border-strong: #3d6936; /* logo forest */
+  --text: #a8d15a; /* ~11:1 on --bg */
+  --text-strong: #cfe8a0;
+  --text-muted: #8fab76;
+  --accent: #8ac504; /* logo lime */
+  --accent-hover: #6b9f17; /* logo leaf */
+  --accent-contrast: #10190a; /* text on lime buttons, 8.6:1 */
+  --brand-forest: #3d6936;
   --danger: #f87171;
   --warning: #fbbf24;
   --info: #67e8f9;
-  --ring: #4ade80;
+  --ring: #8ac504;
   color-scheme: dark;
 }
 
@@ -39,6 +45,7 @@
   --color-warning: var(--warning);
   --color-info: var(--info);
   --color-ring: var(--ring);
+  --color-brand-forest: var(--brand-forest);
   --font-sans: var(--font-poppins);
   --font-display: var(--font-poppins);
 }

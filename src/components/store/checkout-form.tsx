@@ -164,7 +164,7 @@ export function CheckoutForm({ customer, addresses }: { customer: CheckoutCustom
       image: `${window.location.origin}/brand/logo-mark-256.png`,
       prefill: data.prefill,
       notes: { orderNumber: data.orderNumber },
-      theme: { color: "#22c55e", backdrop_color: "#0a0a0a" },
+      theme: { color: "#8ac504", backdrop_color: "#0a0a0a" },
       modal: {
         confirm_close: true,
         ondismiss: () => {

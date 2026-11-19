@@ -24,7 +24,7 @@ function loadAssets() {
   return assets;
 }
 
-const GREEN: [number, number, number] = [22, 163, 74];
+const GREEN: [number, number, number] = [61, 105, 54]; // logo forest green #3D6936
 const DARK: [number, number, number] = [20, 30, 24];
 const MUTED: [number, number, number] = [95, 110, 100];
 
@@ -70,7 +70,7 @@ export function buildOrdersPdf(rows: OrderExportRow[], meta: { filters: string; 
   const boxW = (pageW - margin * 2 - gap * (stats.length - 1)) / stats.length;
   stats.forEach(([label, value], i) => {
     const x = margin + i * (boxW + gap);
-    doc.setDrawColor(210, 230, 215).setFillColor(244, 251, 246).roundedRect(x, boxY, boxW, 40, 4, 4, "FD");
+    doc.setDrawColor(214, 230, 190).setFillColor(246, 250, 237).roundedRect(x, boxY, boxW, 40, 4, 4, "FD");
     doc.setFont("Poppins", "normal").setFontSize(8).setTextColor(...MUTED).text(label, x + 10, boxY + 15);
     doc.setFont("Poppins", "bold").setFontSize(12).setTextColor(...DARK).text(value, x + 10, boxY + 32);
   });
@@ -95,9 +95,9 @@ export function buildOrdersPdf(rows: OrderExportRow[], meta: { filters: string; 
       [PAYMENT_STATUS_LABEL[o.paymentStatus] ?? o.paymentStatus, o.paymentMethod, o.razorpayPaymentId].filter(Boolean).join("\n"),
       [formatPaise(o.totalPaise), o.refundedPaise ? `Refunded ${formatPaise(o.refundedPaise)}` : "", o.gstPaise ? `incl. GST ${formatPaise(o.gstPaise)}` : ""].filter(Boolean).join("\n"),
     ]),
-    styles: { font: "Poppins", fontSize: 7.5, textColor: DARK, cellPadding: 5, valign: "top", lineColor: [225, 232, 227], lineWidth: 0.5, overflow: "linebreak" },
+    styles: { font: "Poppins", fontSize: 7.5, textColor: DARK, cellPadding: 5, valign: "top", lineColor: [226, 233, 216], lineWidth: 0.5, overflow: "linebreak" },
     headStyles: { font: "Poppins", fontStyle: "bold", fillColor: GREEN, textColor: 255, fontSize: 8 },
-    alternateRowStyles: { fillColor: [248, 251, 249] },
+    alternateRowStyles: { fillColor: [248, 250, 243] },
     columnStyles: {
       0: { cellWidth: 92 },
       1: { cellWidth: 118 },

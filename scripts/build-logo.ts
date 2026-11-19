@@ -24,7 +24,7 @@ const TEXT_TOP_Y = 336;
 const TAGLINE_TOP_Y = 560;
 
 const BG = { r: 10, g: 10, b: 10 }; // site background #0a0a0a
-const LIGHT_TEXT = { r: 134, g: 239, b: 172 }; // site --text-strong #86efac
+const LIGHT_TEXT = { r: 207, g: 232, b: 160 }; // site --text-strong #cfe8a0 (light tint of the logo green)
 
 type Px = { data: Buffer; width: number; height: number };
 
