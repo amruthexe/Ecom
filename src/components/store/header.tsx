@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { listCategories } from "@/server/catalog";
 import { Container } from "@/components/ui/layout";
+import { cn } from "@/lib/utils";
 import { AccountMenu, AccountMenuFallback } from "./account-menu";
 import { CartButton } from "./cart-button";
 import { Logo } from "./logo";
@@ -21,16 +22,17 @@ export async function Header() {
           <MobileNav categories={categories} />
         </Suspense>
         <Logo />
-        <nav className="ml-8 hidden items-center gap-1 lg:flex" aria-label="Main">
+        <nav className="ml-6 hidden min-w-0 items-center gap-0.5 lg:flex" aria-label="Main">
           <NavLink href="/products">Shop all</NavLink>
-          {categories.slice(0, 5).map((c) => (
-            <NavLink key={c.id} href={`/categories/${c.slug}`}>
+          {/* Show as many categories as fit; the rest are in the footer, mobile menu and Shop all. */}
+          {categories.slice(0, 4).map((c, i) => (
+            <NavLink key={c.id} href={`/categories/${c.slug}`} className={i >= 2 ? "hidden xl:block" : undefined}>
               {c.name}
             </NavLink>
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <SearchBox className="hidden w-64 md:block xl:w-72" />
+          <SearchBox className="hidden w-56 md:block xl:w-64" />
           <Suspense fallback={<AccountMenuFallback />}>
             <AccountMenu />
           </Suspense>
@@ -41,9 +43,9 @@ export async function Header() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
   return (
-    <Link href={href} className="rounded-md px-3 py-2 text-sm text-fg transition-colors hover:bg-surface-2 hover:text-fg-strong">
+    <Link href={href} className={cn("rounded-md px-2.5 py-2 text-sm whitespace-nowrap text-fg transition-colors hover:bg-surface-2 hover:text-fg-strong", className)}>
       {children}
     </Link>
   );
