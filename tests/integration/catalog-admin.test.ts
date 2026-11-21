@@ -55,6 +55,17 @@ describe("product service", () => {
     expect(await AuditLog.countDocuments({ entityId: id, action: "product.create" })).toBe(1);
   });
 
+  it("lets the owner change an existing product's delivery charge (₹300 → ₹150 → free)", async () => {
+    const form = await getProductForEdit(id);
+    expect(form?.deliveryRupees).toBe(300);
+    expect((await saveProduct({ ...form!, deliveryRupees: 150 }, actor, id)).ok).toBe(true);
+    expect((await Product.findById(id).lean())?.deliveryPaise).toBe(15000);
+    expect((await getProductForEdit(id))?.deliveryRupees).toBe(150);
+    expect((await saveProduct({ ...form!, deliveryRupees: 0 }, actor, id)).ok).toBe(true);
+    expect((await Product.findById(id).lean())?.deliveryPaise).toBe(0);
+    await saveProduct({ ...form!, deliveryRupees: 300 }, actor, id);
+  });
+
   it("rejects a selling price above MRP", async () => {
     const r = await saveProduct({ ...base(), salePriceRupees: 1500 }, actor, id);
     expect(!r.ok && r.errors.salePriceRupees).toBe("Selling price can't be more than MRP");
