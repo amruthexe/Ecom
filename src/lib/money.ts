@@ -32,6 +32,13 @@ export function discountPercent(mrpPaise: number, salePaise: number): number {
   return Math.round(((mrpPaise - salePaise) / mrpPaise) * 10_000) / 100;
 }
 
+/** Keeps only digits and one decimal point while typing a rupee amount ("1,299.50" → "1299.50"). */
+export function cleanMoneyInput(value: string): string {
+  const digits = value.replace(/[^\d.]/g, "");
+  const dot = digits.indexOf(".");
+  return dot === -1 ? digits : digits.slice(0, dot + 1) + digits.slice(dot + 1).replace(/\./g, "").slice(0, 2);
+}
+
 const pct = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 });
 /** "10.45%", "10.5%", "10%". */
 export function formatPercent(value: number): string {

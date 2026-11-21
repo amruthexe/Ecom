@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discountPercent, formatPaise, formatPercent, rupeesToPaise, splitInclusiveGst } from "@/lib/money";
+import { cleanMoneyInput, discountPercent, formatPaise, formatPercent, rupeesToPaise, splitInclusiveGst } from "@/lib/money";
 import { slugify } from "@/lib/utils";
 
 describe("money", () => {
@@ -38,6 +38,18 @@ describe("money", () => {
 describe("slugify", () => {
   it("creates url-safe slugs", () => {
     expect(slugify("  Men's Café T-Shirt  ")).toBe("men-s-cafe-t-shirt");
+  });
+});
+
+describe("cleanMoneyInput (admin price boxes)", () => {
+  it("keeps digits and one decimal point, max 2 decimals", () => {
+    expect(cleanMoneyInput("300")).toBe("300");
+    expect(cleanMoneyInput("150")).toBe("150");
+    expect(cleanMoneyInput("0")).toBe("0");
+    expect(cleanMoneyInput("1,299.50")).toBe("1299.50");
+    expect(cleanMoneyInput("₹ 895.505")).toBe("895.50");
+    expect(cleanMoneyInput("1.2.3")).toBe("1.23");
+    expect(cleanMoneyInput("abc")).toBe("");
   });
 });
 

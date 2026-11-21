@@ -4,7 +4,7 @@ import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import { optionCombinations } from "@/lib/catalog";
-import { discountPercent, formatPaise, formatPercent } from "@/lib/money";
+import { cleanMoneyInput, discountPercent, formatPaise, formatPercent } from "@/lib/money";
 import { cn, slugify } from "@/lib/utils";
 import type { ProductInput } from "@/lib/validators/product";
 import { saveProductAction, type FormState } from "@/server/actions/catalog";
@@ -141,7 +141,7 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
                   inputMode="decimal"
                   className={inputCls}
                   value={mrp}
-                  onChange={(e) => setMrp(e.target.value.replace(/[^d.]/g, ""))}
+                  onChange={(e) => setMrp(cleanMoneyInput(e.target.value))}
                   placeholder="e.g. 1000"
                   aria-invalid={!!errors.mrpRupees}
                 />
@@ -152,7 +152,7 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
                   inputMode="decimal"
                   className={inputCls}
                   value={salePrice}
-                  onChange={(e) => setSalePrice(e.target.value.replace(/[^d.]/g, ""))}
+                  onChange={(e) => setSalePrice(cleanMoneyInput(e.target.value))}
                   placeholder="e.g. 895.50"
                   aria-invalid={!!errors.salePriceRupees}
                 />
@@ -163,7 +163,7 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
                   inputMode="decimal"
                   className={inputCls}
                   value={delivery}
-                  onChange={(e) => setDelivery(e.target.value.replace(/[^d.]/g, ""))}
+                  onChange={(e) => setDelivery(cleanMoneyInput(e.target.value))}
                   placeholder="e.g. 300"
                   aria-invalid={!!errors.deliveryRupees}
                 />
@@ -310,7 +310,7 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
                               className={inputCls}
                               value={v.mrp}
                               placeholder="Same"
-                              onChange={(e) => setVariants((all) => all.map((x, j) => (j === i ? { ...x, mrp: e.target.value.replace(/[^\d.]/g, "") } : x)))}
+                              onChange={(e) => setVariants((all) => all.map((x, j) => (j === i ? { ...x, mrp: cleanMoneyInput(e.target.value) } : x)))}
                               aria-label="Variant MRP override"
                             />
                           </label>
