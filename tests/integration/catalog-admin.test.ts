@@ -32,7 +32,7 @@ afterAll(async () => {
   await mongoose.disconnect();
 });
 
-const base = () => ({ name: "Test Tee", categoryId, status: "active", mrpRupees: 1499, discountPercent: 20, sku: "T-TEE", stock: 10 });
+const base = () => ({ name: "Test Tee", categoryId, status: "active", mrpRupees: 1499, salePriceRupees: 1199, deliveryRupees: 300, sku: "T-TEE", stock: 10 });
 
 describe("product service", () => {
   let id = "";
@@ -46,6 +46,8 @@ describe("product service", () => {
     const doc = await Product.findById(id).lean();
     expect(doc?.mrpPaise).toBe(149900);
     expect(doc?.pricePaise).toBe(119900);
+    expect(doc?.salePricePaise).toBe(119900);
+    expect(doc?.deliveryPaise).toBe(30000);
     expect(doc?.totalStock).toBe(10);
     const txns = await InventoryTransaction.find({ productId: id }).lean();
     expect(txns).toHaveLength(1);
@@ -53,11 +55,16 @@ describe("product service", () => {
     expect(await AuditLog.countDocuments({ entityId: id, action: "product.create" })).toBe(1);
   });
 
-  it("updates discount and stock, recording a manual adjustment", async () => {
-    const r = await saveProduct({ ...base(), discountPercent: 50, stock: 7 }, actor, id);
+  it("rejects a selling price above MRP", async () => {
+    const r = await saveProduct({ ...base(), salePriceRupees: 1500 }, actor, id);
+    expect(!r.ok && r.errors.salePriceRupees).toBe("Selling price can't be more than MRP");
+  });
+
+  it("updates selling price (paise allowed) and stock, recording a manual adjustment", async () => {
+    const r = await saveProduct({ ...base(), salePriceRupees: 749.5, stock: 7 }, actor, id);
     expect(r.ok).toBe(true);
     const doc = await Product.findById(id).lean();
-    expect(doc?.pricePaise).toBe(75000); // 1499 × 50% = 749.5 → ₹750
+    expect(doc?.pricePaise).toBe(74950); // exactly what the owner typed
     const adj = await InventoryTransaction.findOne({ productId: id, reason: "manual_adjust" }).lean();
     expect(adj).toMatchObject({ change: -3, balanceAfter: 7 });
   });

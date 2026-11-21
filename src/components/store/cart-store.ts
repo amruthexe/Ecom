@@ -19,6 +19,8 @@ const lineSchema = z.object({
   variantId: z.string().optional(),
   optionsLabel: z.string().optional(),
   unitPricePaise: z.number().int().nonnegative(),
+  /** Delivery per unit (display only). Older saved carts don't have it → 0 until refreshed. */
+  unitDeliveryPaise: z.number().int().nonnegative().default(0),
   mrpPaise: z.number().int().nonnegative(),
   qty: z.number().int().min(1),
   maxQty: z.number().int().min(0),
@@ -74,16 +76,17 @@ export const cartStore = {
   getServerSnapshot: () => EMPTY,
 
   /** Adds or increments a line. Returns the resulting quantity. */
-  add(line: Omit<CartLine, "key" | "qty">, qty: number): number {
+  add(line: Omit<CartLine, "key" | "qty" | "unitDeliveryPaise"> & { unitDeliveryPaise?: number }, qty: number): number {
     const key = `${line.productId}:${line.variantId ?? "-"}`;
     const lines = load();
     const existing = lines.find((l) => l.key === key);
     const cap = Math.min(line.maxQty, MAX_QTY_PER_LINE);
     const nextQty = Math.min((existing?.qty ?? 0) + qty, cap);
     if (nextQty < 1) return existing?.qty ?? 0;
+    const full = { ...line, unitDeliveryPaise: line.unitDeliveryPaise ?? 0 };
     const next = existing
-      ? lines.map((l) => (l.key === key ? { ...l, ...line, qty: nextQty } : l))
-      : [...lines, { ...line, key, qty: nextQty }];
+      ? lines.map((l) => (l.key === key ? { ...l, ...full, qty: nextQty } : l))
+      : [...lines, { ...full, key, qty: nextQty }];
     commit(next);
     return nextQty;
   },
@@ -99,8 +102,8 @@ export const cartStore = {
     commit(EMPTY);
   },
   /** Replace the whole cart (used when syncing with the customer's account). */
-  replace(lines: Omit<CartLine, "key">[]) {
-    commit(lines.map((l) => ({ ...l, key: `${l.productId}:${l.variantId ?? "-"}` })));
+  replace(lines: (Omit<CartLine, "key" | "unitDeliveryPaise"> & { unitDeliveryPaise?: number })[]) {
+    commit(lines.map((l) => ({ ...l, unitDeliveryPaise: l.unitDeliveryPaise ?? 0, key: `${l.productId}:${l.variantId ?? "-"}` })));
   },
 };
 
@@ -114,6 +117,11 @@ export function cartCount(lines: CartLine[]): number {
 
 export function cartSubtotal(lines: CartLine[]): number {
   return lines.reduce((sum, l) => sum + l.unitPricePaise * l.qty, 0);
+}
+
+/** Delivery is charged per piece (owner decision 2026-11-21). */
+export function cartDelivery(lines: CartLine[]): number {
+  return lines.reduce((sum, l) => sum + (l.unitDeliveryPaise ?? 0) * l.qty, 0);
 }
 
 export { MAX_QTY_PER_LINE };

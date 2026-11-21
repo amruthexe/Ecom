@@ -5,22 +5,36 @@ export const MAX_DISCOUNT_PERCENT = 90;
 
 export type PriceInfo = { pricePaise: number; mrpPaise: number; onSale: boolean };
 
-/** Applies a percentage discount, rounded to the nearest whole rupee. */
+/** LEGACY: products saved before selling prices existed used MRP − discount %, rounded to the rupee. */
 export function applyDiscount(mrpPaise: number, discountPercent: number): number {
   const pct = Math.min(Math.max(discountPercent, 0), MAX_DISCOUNT_PERCENT);
   if (pct === 0) return mrpPaise;
   return Math.round((mrpPaise * (100 - pct)) / 100 / 100) * 100;
 }
 
-/** Effective display price. Checkout always recomputes server-side. */
-export function priceOf(product: Pick<Product, "mrpPaise" | "discountPercent">, variant?: Pick<ProductVariant, "mrpPaise">): PriceInfo {
+type PriceFields = Pick<Product, "mrpPaise" | "salePricePaise" | "discountPercent">;
+
+/**
+ * Effective price. Checkout always recomputes server-side.
+ * - The owner enters MRP and the selling price; the discount % is derived from them (owner decision 2026-11-21).
+ * - A variant with its own MRP gets the same discount ratio as the main product, to the paisa.
+ * - Products saved before selling prices existed fall back to the legacy MRP − discount % rule.
+ */
+export function priceOf(product: PriceFields, variant?: Pick<ProductVariant, "mrpPaise">): PriceInfo {
   const mrpPaise = variant?.mrpPaise ?? product.mrpPaise;
-  const pricePaise = applyDiscount(mrpPaise, product.discountPercent);
+  let pricePaise: number;
+  if (product.salePricePaise != null && product.salePricePaise > 0) {
+    const base = Math.min(product.salePricePaise, product.mrpPaise);
+    pricePaise = variant?.mrpPaise != null && product.mrpPaise > 0 ? Math.round((variant.mrpPaise * base) / product.mrpPaise) : base;
+  } else {
+    pricePaise = applyDiscount(mrpPaise, product.discountPercent ?? 0);
+  }
+  pricePaise = Math.min(pricePaise, mrpPaise);
   return { pricePaise, mrpPaise, onSale: pricePaise < mrpPaise };
 }
 
 /** Lowest price across variants, used for listing cards, sorting and price filters. */
-export function fromPriceOf(product: Pick<Product, "mrpPaise" | "discountPercent" | "variants">): PriceInfo {
+export function fromPriceOf(product: PriceFields & Pick<Product, "variants">): PriceInfo {
   if (product.variants.length === 0) return priceOf(product);
   return product.variants
     .map((v) => priceOf(product, v))

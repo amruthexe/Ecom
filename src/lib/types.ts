@@ -18,7 +18,7 @@ export type ProductVariant = {
   sku: string;
   options: Record<string, string>;
   stock: number;
-  /** Optional per-variant MRP override. The product's discount % still applies. */
+  /** Optional per-variant MRP override. The product's discount ratio still applies. */
   mrpPaise?: number;
 };
 
@@ -40,8 +40,12 @@ export type Product = {
   tags: string[];
   images: ProductImage[];
   mrpPaise: number;
-  /** 0–90. Sale price = MRP × (100 − discount) / 100, rounded to the rupee. */
-  discountPercent: number;
+  /** Selling price the owner entered (GST-inclusive). Missing on products saved before 2026-11-21. */
+  salePricePaise?: number;
+  /** LEGACY: only used when salePricePaise is missing. */
+  discountPercent?: number;
+  /** Delivery charge per unit, added at checkout (owner decision 2026-11-21). */
+  deliveryPaise: number;
   sku: string;
   stock: number; // used when there are no variants
   options: ProductOption[];

@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { MAX_DISCOUNT_PERCENT } from "@/lib/catalog";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const skuRegex = /^[A-Z0-9][A-Z0-9_-]{0,59}$/;
 const objectId = z.string().regex(/^[a-f0-9]{24}$/, "Choose a category");
+
+const twoDecimals = (n: number) => Math.abs(n * 100 - Math.round(n * 100)) < 1e-6;
 
 const rupees = z
   .number({ error: "Enter a price" })
@@ -30,7 +31,8 @@ export const productInputSchema = z
     status: z.enum(["draft", "active", "archived"]),
     isFeatured: z.boolean().default(false),
     mrpRupees: rupees,
-    discountPercent: z.number().int("Whole numbers only").min(0).max(MAX_DISCOUNT_PERCENT, `Max ${MAX_DISCOUNT_PERCENT}%`),
+    salePriceRupees: z.number({ error: "Enter the selling price" }).positive("Selling price must be more than ₹0").max(10_000_000, "Price is too high").refine(twoDecimals, "Max 2 decimals"),
+    deliveryRupees: z.number({ error: "Enter a delivery charge (0 for free)" }).min(0, "Can't be negative").max(100_000, "Too high").refine(twoDecimals, "Max 2 decimals"),
     sku: z.string().trim().toUpperCase().regex(skuRegex, "Use A–Z, 0–9, dashes"),
     stock: z.number().int("Whole numbers only").min(0, "Can't be negative").max(1_000_000).default(0),
     options: z
@@ -57,6 +59,7 @@ export const productInputSchema = z
     images: z.array(imageInputSchema).max(10, "Up to 10 images").default([]),
   })
   .superRefine((p, ctx) => {
+    if (p.salePriceRupees > p.mrpRupees) ctx.addIssue({ code: "custom", path: ["salePriceRupees"], message: "Selling price can't be more than MRP" });
     if (p.options.length > 0 && p.variants.length === 0) {
       ctx.addIssue({ code: "custom", path: ["variants"], message: "Generate variants for your options" });
     }

@@ -7,7 +7,7 @@ import { formatPaise, splitInclusiveGst } from "@/lib/money";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/layout";
 import { Price } from "@/components/ui/price";
-import { cartCount, cartStore, cartSubtotal, MAX_QTY_PER_LINE, useCart } from "./cart-store";
+import { cartCount, cartStore, cartDelivery, cartSubtotal, MAX_QTY_PER_LINE, useCart } from "./cart-store";
 import { ProductMedia } from "./product-media";
 import { QuantityStepper } from "./quantity-stepper";
 
@@ -33,9 +33,11 @@ export function CartView() {
   }
 
   const subtotal = cartSubtotal(lines);
+  const delivery = cartDelivery(lines);
+  const total = subtotal + delivery;
   const mrpTotal = lines.reduce((s, l) => s + l.mrpPaise * l.qty, 0);
   const savings = mrpTotal - subtotal;
-  const { gstPaise } = splitInclusiveGst(subtotal, DISPLAY_GST_PERCENT);
+  const { gstPaise } = splitInclusiveGst(total, DISPLAY_GST_PERCENT);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
@@ -64,6 +66,11 @@ export function CartView() {
                   <p className="shrink-0 font-semibold text-fg-strong tabular-nums">{formatPaise(line.unitPricePaise * line.qty)}</p>
                 </div>
                 <Price size="sm" pricePaise={line.unitPricePaise} mrpPaise={line.mrpPaise} className="text-xs" />
+                {line.unitDeliveryPaise > 0 && (
+                  <p className="text-xs text-fg-muted">
+                    + {formatPaise(line.unitDeliveryPaise)} delivery{line.qty > 1 ? ` × ${line.qty} = ${formatPaise(line.unitDeliveryPaise * line.qty)}` : ""}
+                  </p>
+                )}
                 <div className="mt-auto flex items-center justify-between gap-3">
                   <QuantityStepper
                     size="sm"
@@ -91,9 +98,9 @@ export function CartView() {
         <dl className="mt-5 space-y-3 text-sm">
           <Row label={`Items (${cartCount(lines)})`} value={formatPaise(mrpTotal)} />
           {savings > 0 && <Row label="Discount" value={`− ${formatPaise(savings)}`} accent />}
-          <Row label="Shipping" value="Calculated at checkout" muted />
+          <Row label="Delivery" value={delivery > 0 ? formatPaise(delivery) : "Free"} />
           <div className="border-t border-border pt-3">
-            <Row label="Subtotal" value={formatPaise(subtotal)} strong />
+            <Row label="Total" value={formatPaise(total)} strong />
             <p className="mt-1 text-xs text-fg-muted">Includes approx. {formatPaise(gstPaise)} GST</p>
           </div>
         </dl>

@@ -1,4 +1,4 @@
-import { discountPercent, formatPaise } from "@/lib/money";
+import { discountPercent, formatPaise, formatPercent } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export function Price({
@@ -32,7 +32,7 @@ export function Price({
       {onSale && (
         <>
           <s className={cn("text-fg-muted tabular-nums", size === "lg" ? "text-base" : "text-xs")}>{formatPaise(mrpPaise)}</s>
-          <span className={cn("font-medium text-accent", size === "lg" ? "text-sm" : "text-xs")}>{off}% off</span>
+          <span className={cn("font-medium text-accent", size === "lg" ? "text-sm" : "text-xs")}>{formatPercent(off)} off</span>
         </>
       )}
     </div>

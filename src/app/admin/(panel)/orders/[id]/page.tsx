@@ -73,7 +73,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
             <dl className="mt-4 space-y-1.5 border-t border-border pt-4 text-sm">
               <Row label="Items (MRP)" value={formatPaise(order.pricing.mrpTotalPaise)} />
               {order.pricing.mrpTotalPaise > order.pricing.subtotalPaise && <Row label="Discount" value={`− ${formatPaise(order.pricing.mrpTotalPaise - order.pricing.subtotalPaise)}`} />}
-              <Row label="Shipping" value={order.pricing.shippingPaise ? formatPaise(order.pricing.shippingPaise) : "Free"} />
+              <Row label="Delivery" value={order.pricing.shippingPaise ? formatPaise(order.pricing.shippingPaise) : "Free"} />
               <Row label="Total paid" value={formatPaise(order.pricing.totalPaise)} strong />
               <Row label={`GST included (${order.pricing.gstRatePercent}%)`} value={formatPaise(order.pricing.gstPaise)} />
               {order.refundedPaise > 0 && <Row label="Refunded" value={`− ${formatPaise(order.refundedPaise)}`} />}

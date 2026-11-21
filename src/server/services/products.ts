@@ -1,4 +1,5 @@
 import "server-only";
+import { priceOf } from "@/lib/catalog";
 import mongoose, { Types } from "mongoose";
 import type { StaffUser } from "@/lib/permissions";
 import type { ProductStatus } from "@/lib/types";
@@ -82,7 +83,8 @@ export async function saveProduct(raw: unknown, actor: StaffUser, id?: string): 
     tags: [...new Set(input.tags)],
     images: input.images,
     mrpPaise: toPaise(input.mrpRupees),
-    discountPercent: input.discountPercent,
+    salePricePaise: toPaise(input.salePriceRupees),
+    deliveryPaise: toPaise(input.deliveryRupees),
     sku: input.sku,
     stock: hasVariants ? 0 : input.stock,
     options: input.options,
@@ -149,7 +151,7 @@ export async function saveProduct(raw: unknown, actor: StaffUser, id?: string): 
           entityId: savedId,
           summary: `${existing ? "Updated" : "Created"} product “${doc.name}”`,
           changes: existing
-            ? { mrpPaise: [existing.mrpPaise, doc.mrpPaise], discountPercent: [existing.discountPercent, doc.discountPercent], status: [existing.status, doc.status] }
+            ? { mrpPaise: [existing.mrpPaise, doc.mrpPaise], salePricePaise: [existing.salePricePaise, doc.salePricePaise], deliveryPaise: [existing.deliveryPaise, doc.deliveryPaise], status: [existing.status, doc.status] }
             : undefined,
         },
         session,
@@ -203,7 +205,7 @@ export type AdminProductRow = {
   status: ProductStatus;
   pricePaise: number;
   mrpPaise: number;
-  discountPercent: number;
+  deliveryPaise: number;
   totalStock: number;
   variantCount: number;
   imageUrl?: string;
@@ -238,7 +240,7 @@ export async function listAdminProducts(params: { q?: string; status?: ProductSt
     status: d.status,
     pricePaise: d.pricePaise,
     mrpPaise: d.mrpPaise,
-    discountPercent: d.discountPercent,
+    deliveryPaise: d.deliveryPaise ?? 0,
     totalStock: d.totalStock,
     variantCount: d.variants.length,
     imageUrl: d.images[0]?.url,
@@ -267,7 +269,9 @@ export async function getProductForEdit(id: string): Promise<ProductFormValues |
     status: d.status,
     isFeatured: d.isFeatured,
     mrpRupees: d.mrpPaise / 100,
-    discountPercent: d.discountPercent,
+    // Older products have no stored selling price: show the price customers currently pay.
+    salePriceRupees: priceOf({ mrpPaise: d.mrpPaise, salePricePaise: d.salePricePaise ?? undefined, discountPercent: d.discountPercent }).pricePaise / 100,
+    deliveryRupees: (d.deliveryPaise ?? 0) / 100,
     sku: d.sku,
     stock: d.stock,
     options: d.options.map((o) => ({ name: o.name, values: [...o.values] })),

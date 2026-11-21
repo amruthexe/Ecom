@@ -75,6 +75,7 @@ export type ServerCartLine = {
   name: string;
   optionsLabel?: string;
   unitPricePaise: number;
+  unitDeliveryPaise: number;
   mrpPaise: number;
   qty: number;
   maxQty: number;
@@ -94,6 +95,7 @@ export async function getCartLines(userId: string): Promise<ServerCartLine[]> {
     name: l.name,
     optionsLabel: l.options,
     unitPricePaise: l.unitPricePaise,
+    unitDeliveryPaise: l.unitDeliveryPaise,
     mrpPaise: l.unitMrpPaise,
     qty: Math.max(1, Math.min(l.qty, Math.max(l.available, 1), 10)),
     maxQty: l.available,

@@ -352,7 +352,7 @@ export function CheckoutForm({ customer, addresses }: { customer: CheckoutCustom
             <dl className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
               <Row label="Items" value={formatPaise(quote.mrpTotalPaise)} />
               {quote.mrpTotalPaise > quote.subtotalPaise && <Row label="Discount" value={`− ${formatPaise(quote.mrpTotalPaise - quote.subtotalPaise)}`} accent />}
-              <Row label="Shipping" value={quote.shippingPaise ? formatPaise(quote.shippingPaise) : "Free"} />
+              <Row label="Delivery" value={quote.shippingPaise ? formatPaise(quote.shippingPaise) : "Free"} />
               <div className="flex justify-between border-t border-border pt-3 text-base">
                 <dt className="font-medium text-fg-strong">Total</dt>
                 <dd className="font-semibold text-fg-strong tabular-nums">{formatPaise(quote.totalPaise)}</dd>

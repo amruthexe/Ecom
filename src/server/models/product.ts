@@ -21,7 +21,12 @@ export interface ProductDoc {
   tags: string[];
   images: ImageDoc[];
   mrpPaise: number;
+  /** Selling price entered by the owner (GST-inclusive). Missing on products saved before 2026-11-21. */
+  salePricePaise?: number;
+  /** LEGACY: only used when salePricePaise is missing. */
   discountPercent: number;
+  /** Delivery charge per unit, added at checkout. */
+  deliveryPaise: number;
   sku: string;
   stock: number;
   options: { name: string; values: string[] }[];
@@ -56,7 +61,9 @@ const productSchema = new Schema<ProductDoc>(
     tags: { type: [String], default: [] },
     images: { type: [imageSchema], default: [] },
     mrpPaise: { type: Number, required: true, min: 0, validate: intValidator },
+    salePricePaise: { type: Number, min: 0, validate: intValidator },
     discountPercent: { type: Number, default: 0, min: 0, max: MAX_DISCOUNT_PERCENT, validate: intValidator },
+    deliveryPaise: { type: Number, default: 0, min: 0, validate: intValidator },
     sku: { type: String, required: true, trim: true, uppercase: true, maxlength: 40 },
     stock: { type: Number, default: 0, min: 0, validate: intValidator },
     options: { type: [{ _id: false, name: { type: String, required: true, trim: true }, values: [String] }], default: [] },
@@ -82,7 +89,7 @@ productSchema.index({ status: 1, totalStock: 1 });
 /** Keep denormalized price/stock fields in sync on every save. */
 productSchema.pre("validate", function () {
   const variants = this.variants.map((v) => ({ mrpPaise: v.mrpPaise ?? undefined, stock: v.stock }));
-  this.pricePaise = fromPriceOf({ mrpPaise: this.mrpPaise, discountPercent: this.discountPercent, variants: variants as never }).pricePaise;
+  this.pricePaise = fromPriceOf({ mrpPaise: this.mrpPaise, salePricePaise: this.salePricePaise ?? undefined, discountPercent: this.discountPercent, variants: variants as never }).pricePaise;
   this.totalStock = totalStock({ stock: this.stock, variants: variants as never });
 });
 

@@ -6,7 +6,7 @@ import { Alert, PageHeader, StatusBadge, StockBadge, inputCls } from "@/componen
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/layout";
 import { ProductArt } from "@/components/store/product-art";
-import { formatPaise } from "@/lib/money";
+import { discountPercent, formatPaise, formatPercent } from "@/lib/money";
 import type { ProductStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { requireStaffPage } from "@/server/auth";
@@ -202,9 +202,10 @@ function Thumb({ row, small }: { row: AdminProductRow; small?: boolean }) {
 
 function PriceCell({ row }: { row: AdminProductRow }) {
   return (
-    <span className="flex items-baseline gap-1.5">
+    <span className="flex flex-wrap items-baseline gap-x-1.5">
       <span className="font-medium text-fg-strong tabular-nums">{formatPaise(row.pricePaise)}</span>
-      {row.discountPercent > 0 && <span className="text-xs text-accent">−{row.discountPercent}%</span>}
+      {row.mrpPaise > row.pricePaise && <span className="text-xs text-accent">−{formatPercent(discountPercent(row.mrpPaise, row.pricePaise))}</span>}
+      {row.deliveryPaise > 0 && <span className="text-xs text-fg-muted">+{formatPaise(row.deliveryPaise)} del.</span>}
     </span>
   );
 }

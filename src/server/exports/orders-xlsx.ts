@@ -54,7 +54,7 @@ export async function buildOrdersWorkbook(rows: OrderExportRow[], meta: { filter
     { header: "MRP total", key: "mrp", width: 12, style: { numFmt: MONEY } },
     { header: "Discount", key: "discount", width: 12, style: { numFmt: MONEY } },
     { header: "Subtotal", key: "subtotal", width: 12, style: { numFmt: MONEY } },
-    { header: "Shipping", key: "shipping", width: 11, style: { numFmt: MONEY } },
+    { header: "Delivery", key: "shipping", width: 11, style: { numFmt: MONEY } },
     { header: "GST (incl.)", key: "gst", width: 12, style: { numFmt: MONEY } },
     { header: "Order total", key: "total", width: 13, style: { numFmt: MONEY } },
     { header: "Refunded", key: "refunded", width: 12, style: { numFmt: MONEY } },

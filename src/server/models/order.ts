@@ -13,6 +13,8 @@ export interface OrderItemDoc {
   imageUrl?: string;
   unitMrpPaise: number;
   unitPricePaise: number;
+  /** Delivery per unit at the time of order (0 on orders before 2026-11-21). */
+  unitDeliveryPaise?: number;
   qty: number;
   lineTotalPaise: number;
 }
@@ -71,6 +73,7 @@ const itemSchema = new Schema<OrderItemDoc>(
     imageUrl: String,
     unitMrpPaise: { type: Number, required: true, validate: intValidator },
     unitPricePaise: { type: Number, required: true, validate: intValidator },
+    unitDeliveryPaise: { type: Number, default: 0, validate: intValidator },
     qty: { type: Number, required: true, min: 1, validate: intValidator },
     lineTotalPaise: { type: Number, required: true, validate: intValidator },
   },

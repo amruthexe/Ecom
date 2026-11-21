@@ -94,6 +94,7 @@ export async function createCheckout(raw: unknown, opts: { userId?: string; acco
       imageUrl: l.imageUrl,
       unitMrpPaise: l.unitMrpPaise,
       unitPricePaise: l.unitPricePaise,
+      unitDeliveryPaise: l.unitDeliveryPaise,
       qty: l.qty,
       lineTotalPaise: l.lineTotalPaise,
     })),

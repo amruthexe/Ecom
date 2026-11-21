@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discountPercent, formatPaise, rupeesToPaise, splitInclusiveGst } from "@/lib/money";
+import { discountPercent, formatPaise, formatPercent, rupeesToPaise, splitInclusiveGst } from "@/lib/money";
 import { slugify } from "@/lib/utils";
 
 describe("money", () => {
@@ -27,6 +27,9 @@ describe("money", () => {
 
   it("computes discount percent", () => {
     expect(discountPercent(200000, 150000)).toBe(25);
+    expect(discountPercent(100000, 89550)).toBe(10.45); // ₹1,000 → ₹895.50
+    expect(discountPercent(100000, 89500)).toBe(10.5);
+    expect(discountPercent(30000, 19900)).toBe(33.67); // 33.666… → 2 decimals
     expect(discountPercent(1000, 1000)).toBe(0);
     expect(discountPercent(0, 0)).toBe(0);
   });
@@ -35,5 +38,13 @@ describe("money", () => {
 describe("slugify", () => {
   it("creates url-safe slugs", () => {
     expect(slugify("  Men's Café T-Shirt  ")).toBe("men-s-cafe-t-shirt");
+  });
+});
+
+describe("formatPercent", () => {
+  it("shows up to 2 decimals without trailing zeros", () => {
+    expect(formatPercent(10.45)).toBe("10.45%");
+    expect(formatPercent(10.5)).toBe("10.5%");
+    expect(formatPercent(10)).toBe("10%");
   });
 });

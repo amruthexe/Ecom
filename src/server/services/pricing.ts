@@ -23,6 +23,8 @@ export type QuoteLine = {
   imageUrl?: string;
   unitMrpPaise: number;
   unitPricePaise: number;
+  /** Delivery charge per unit (owner decision: charged per piece). */
+  unitDeliveryPaise: number;
   qty: number;
   lineTotalPaise: number;
   available: number;
@@ -35,6 +37,7 @@ export type Quote = {
   problems: QuoteProblem[];
   mrpTotalPaise: number;
   subtotalPaise: number;
+  /** Delivery: Σ product delivery × qty, plus any store-wide flat shipping (currently ₹0). */
   shippingPaise: number;
   totalPaise: number;
   gstPaise: number;
@@ -94,7 +97,7 @@ export async function quoteCart(items: CartItemInput[]): Promise<Quote> {
       return;
     }
     const available = variant ? variant.stock : p.stock;
-    const price = priceOf({ mrpPaise: p.mrpPaise, discountPercent: p.discountPercent }, variant ? { mrpPaise: variant.mrpPaise ?? undefined } : undefined);
+    const price = priceOf({ mrpPaise: p.mrpPaise, salePricePaise: p.salePricePaise ?? undefined, discountPercent: p.discountPercent }, variant ? { mrpPaise: variant.mrpPaise ?? undefined } : undefined);
     const optionValues = variant ? Object.values(variant.options instanceof Map ? Object.fromEntries(variant.options) : variant.options) : [];
     lines.push({
       productId: item.productId,
@@ -106,6 +109,7 @@ export async function quoteCart(items: CartItemInput[]): Promise<Quote> {
       imageUrl: p.images[0]?.url,
       unitMrpPaise: price.mrpPaise,
       unitPricePaise: price.pricePaise,
+      unitDeliveryPaise: p.deliveryPaise ?? 0,
       qty: item.qty,
       lineTotalPaise: price.pricePaise * item.qty,
       available,
@@ -123,7 +127,8 @@ export async function quoteCart(items: CartItemInput[]): Promise<Quote> {
 
   const subtotalPaise = lines.reduce((s, l) => s + l.lineTotalPaise, 0);
   const mrpTotalPaise = lines.reduce((s, l) => s + l.unitMrpPaise * l.qty, 0);
-  const shippingPaise = lines.length ? shippingFor(subtotalPaise, settings) : 0;
+  const deliveryPaise = lines.reduce((s, l) => s + l.unitDeliveryPaise * l.qty, 0);
+  const shippingPaise = lines.length ? deliveryPaise + shippingFor(subtotalPaise, settings) : 0;
   const totalPaise = subtotalPaise + shippingPaise;
   return {
     lines,

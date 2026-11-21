@@ -9,6 +9,7 @@ import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
+import { formatPaise } from "@/lib/money";
 import { cartStore, MAX_QTY_PER_LINE } from "./cart-store";
 import { QuantityStepper } from "./quantity-stepper";
 
@@ -52,6 +53,7 @@ export function ProductPurchase({ product }: { product: Product }) {
         variantId: variant?.id,
         optionsLabel: variant ? Object.values(variant.options).join(" / ") : undefined,
         unitPricePaise: price.pricePaise,
+        unitDeliveryPaise: product.deliveryPaise,
         mrpPaise: price.mrpPaise,
         maxQty: stock,
         imageUrl: product.images[0]?.url,
@@ -66,6 +68,15 @@ export function ProductPurchase({ product }: { product: Product }) {
       <div>
         <Price size="lg" pricePaise={price.pricePaise} mrpPaise={price.mrpPaise} />
         <p className="mt-1 text-xs text-fg-muted">Inclusive of all taxes (GST)</p>
+        <p className="mt-2 text-sm text-fg">
+          {product.deliveryPaise > 0 ? (
+            <>
+              + <span className="font-medium text-fg-strong">{formatPaise(product.deliveryPaise)}</span> delivery per piece
+            </>
+          ) : (
+            <span className="font-medium text-accent">Free delivery</span>
+          )}
+        </p>
       </div>
 
       {product.options.map((option) => (

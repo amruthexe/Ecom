@@ -14,6 +14,7 @@
     "create-owner": "tsx --env-file=.env.local scripts/create-owner.ts",
     "test:e2e": "playwright test",
     "cleanup-images": "tsx --env-file=.env.local scripts/cleanup-images.ts",
+    "set-delivery-charges": "tsx --env-file=.env.local scripts/set-delivery-charges.ts",
     "build-logo": "tsx scripts/build-logo.ts"
   },
   "dependencies": {

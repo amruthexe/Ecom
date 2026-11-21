@@ -26,7 +26,14 @@ export function splitInclusiveGst(totalPaise: number, ratePercent: number): { ta
   return { taxablePaise, gstPaise: totalPaise - taxablePaise };
 }
 
+/** Discount % from MRP and selling price, to 2 decimals (owner decision): ₹1,000 → ₹895.50 = 10.45. */
 export function discountPercent(mrpPaise: number, salePaise: number): number {
   if (mrpPaise <= 0 || salePaise >= mrpPaise) return 0;
-  return Math.round(((mrpPaise - salePaise) / mrpPaise) * 100);
+  return Math.round(((mrpPaise - salePaise) / mrpPaise) * 10_000) / 100;
+}
+
+const pct = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 });
+/** "10.45%", "10.5%", "10%". */
+export function formatPercent(value: number): string {
+  return `${pct.format(value)}%`;
 }

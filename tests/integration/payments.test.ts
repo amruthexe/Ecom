@@ -106,9 +106,9 @@ beforeEach(async () => {
   gw = new FakeGateway();
   setGatewayForTests(gw);
   await Product.deleteMany({});
-  const a = await saveProduct({ name: "Mug", categoryId, status: "active", mrpRupees: 800, discountPercent: 25, sku: "P-MUG", stock: 5 }, actor);
+  const a = await saveProduct({ name: "Mug", categoryId, status: "active", mrpRupees: 800, salePriceRupees: 600, deliveryRupees: 0, sku: "P-MUG", stock: 5 }, actor);
   const b = await saveProduct(
-    { name: "Tee", categoryId, status: "active", mrpRupees: 1000, discountPercent: 0, sku: "P-TEE", options: [{ name: "Size", values: ["M"] }], variants: [{ sku: "P-TEE-M", options: { Size: "M" }, stock: 2 }] },
+    { name: "Tee", categoryId, status: "active", mrpRupees: 1000, salePriceRupees: 1000, deliveryRupees: 0, sku: "P-TEE", options: [{ name: "Size", values: ["M"] }], variants: [{ sku: "P-TEE-M", options: { Size: "M" }, stock: 2 }] },
     actor,
   );
   if (!a.ok || !b.ok) throw new Error("products");
@@ -133,6 +133,24 @@ describe("pricing", () => {
   it("merges duplicate lines before checking stock", async () => {
     const q = await quoteCart([{ productId: simpleId, qty: 3 }, { productId: simpleId, qty: 3 }]);
     expect(q.problems[0]?.message).toBe("Only 5 left");
+  });
+});
+
+describe("delivery charge (per piece)", () => {
+  it("adds product delivery × qty to the quote, the Razorpay amount and the order", async () => {
+    const k = await saveProduct({ name: "Kit", categoryId, status: "active", mrpRupees: 1000, salePriceRupees: 895.5, deliveryRupees: 300, sku: "P-KIT", stock: 9 }, actor);
+    if (!k.ok) throw new Error("kit");
+    const q = await quoteCart([{ productId: k.id, qty: 2 }, { productId: simpleId, qty: 1 }]);
+    expect(q.lines[0]).toMatchObject({ unitPricePaise: 89550, unitDeliveryPaise: 30000, lineTotalPaise: 179100 });
+    expect(q.subtotalPaise).toBe(179100 + 60000);
+    expect(q.shippingPaise).toBe(60000); // ₹300 × 2 pieces; the mug has no delivery charge
+    expect(q.totalPaise).toBe(179100 + 60000 + 60000);
+    const r = await checkout([{ productId: k.id, qty: 1 }]);
+    expect(r.amountPaise).toBe(89550 + 30000); // ₹895.50 + ₹300 = ₹1,195.50 at Razorpay
+    expect(gw.orders.get(r.razorpayOrderId)).toBe(119550);
+    const o = await Order.findById(r.orderId).lean();
+    expect(o?.pricing).toMatchObject({ subtotalPaise: 89550, shippingPaise: 30000, totalPaise: 119550 });
+    expect(o?.items[0]).toMatchObject({ unitDeliveryPaise: 30000, qty: 1 });
   });
 });
 

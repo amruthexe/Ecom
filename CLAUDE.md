@@ -37,6 +37,7 @@ ARCHITECTURE.md · DATABASE_SCHEMA.md · API_DOCUMENTATION.md · SECURITY.md · 
 - Database: **MongoDB hosted on DigitalOcean** (not Atlas). URL provided by owner in `.env.local`.
 - Images: **ImageKit** (owner decision). `IMAGE_PROVIDER=imagekit`. Cloudinary is not implemented.
 - Env vars: the owner fills `.env.local` from `.env.example`.
+- Pricing (2026-11-21): the owner enters **MRP + selling price**; the discount % is derived (2 decimals, e.g. 10.45%). Each product has a **delivery charge per piece** (default ₹300), added to the order total and the Razorpay amount (`pricing.shippingPaise` = Σ delivery × qty). Old products without `salePricePaise` fall back to MRP − discount %. One-time script: `pnpm set-delivery-charges` (dry run; `--apply`).
 
 ## Still open (defaults used if not answered)
 - Inventory timing → default: deduct at payment capture, auto-refund if sold out meanwhile.

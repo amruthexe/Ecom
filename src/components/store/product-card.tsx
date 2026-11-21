@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatPaise } from "@/lib/money";
 import { fromPriceOf, hasVariablePricing, stockState, totalStock } from "@/lib/catalog";
 import type { Product } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ export function ProductCard({ product, priority }: { product: Product; priority?
           mrpPaise={price.mrpPaise}
           prefix={hasVariablePricing(product) ? "From" : undefined}
         />
+        <p className="text-[11px] text-fg-muted">{product.deliveryPaise > 0 ? `+ ${formatPaise(product.deliveryPaise)} delivery` : "Free delivery"}</p>
       </div>
     </Link>
   );

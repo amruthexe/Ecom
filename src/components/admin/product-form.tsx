@@ -3,8 +3,8 @@
 import { Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
-import { applyDiscount, MAX_DISCOUNT_PERCENT, optionCombinations } from "@/lib/catalog";
-import { formatPaise } from "@/lib/money";
+import { optionCombinations } from "@/lib/catalog";
+import { discountPercent, formatPaise, formatPercent } from "@/lib/money";
 import { cn, slugify } from "@/lib/utils";
 import type { ProductInput } from "@/lib/validators/product";
 import { saveProductAction, type FormState } from "@/server/actions/catalog";
@@ -15,8 +15,6 @@ type Initial = ProductInput & { id?: string };
 
 type VariantRow = { id?: string; sku: string; options: Record<string, string>; stock: string; mrp: string };
 type OptionRow = { name: string; values: string };
-
-const DISCOUNT_CHIPS = [0, 5, 10, 15, 20, 25, 30, 40, 50];
 
 const num = (s: string): number | undefined => (s.trim() === "" ? undefined : Number(s));
 const comboKey = (o: Record<string, string>, names: string[]) => names.map((n) => o[n] ?? "").join("|");
@@ -36,7 +34,9 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
   const [status, setStatus] = useState<Initial["status"]>(initial?.status ?? "active");
   const [isFeatured, setFeatured] = useState(initial?.isFeatured ?? false);
   const [mrp, setMrp] = useState(initial?.mrpRupees !== undefined ? String(initial.mrpRupees) : "");
-  const [discount, setDiscount] = useState(String(initial?.discountPercent ?? 0));
+  const [salePrice, setSalePrice] = useState(initial?.salePriceRupees !== undefined ? String(initial.salePriceRupees) : "");
+  // New products start with the standard ₹300 delivery charge (owner decision 2026-11-21).
+  const [delivery, setDelivery] = useState(initial?.deliveryRupees !== undefined ? String(initial.deliveryRupees) : "300");
   const [sku, setSku] = useState(initial?.sku ?? "");
   const [stock, setStock] = useState(String(initial?.stock ?? 0));
   const [images, setImages] = useState<UploadedImage[]>(initial?.images?.map((i) => ({ ...i, alt: i.alt ?? "" })) ?? []);
@@ -59,8 +59,10 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
   const effectiveSlug = slugTouched ? slug : slugify(name);
 
   const mrpPaise = Math.round((num(mrp) ?? 0) * 100);
-  const discountNum = Math.min(Math.max(Math.trunc(num(discount) ?? 0), 0), MAX_DISCOUNT_PERCENT);
-  const salePaise = applyDiscount(mrpPaise, discountNum);
+  const salePaise = Math.round((num(salePrice) ?? 0) * 100);
+  const deliveryPaise = Math.round((num(delivery) ?? 0) * 100);
+  const saleValid = mrpPaise > 0 && salePaise > 0 && salePaise <= mrpPaise;
+  const offPercent = saleValid ? discountPercent(mrpPaise, salePaise) : 0;
 
   const optionNames = parsedOptions.map((o) => o.name);
   const combos = optionCombinations(parsedOptions);
@@ -85,7 +87,8 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
     status,
     isFeatured,
     mrpRupees: num(mrp),
-    discountPercent: num(discount) ?? 0,
+    salePriceRupees: num(salePrice),
+    deliveryRupees: num(delivery),
     sku,
     stock: hasVariants ? 0 : (num(stock) ?? 0),
     options: hasVariants ? parsedOptions : [],
@@ -130,54 +133,55 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
             <ImageUploader images={images} onChange={setImages} folder="products" max={10} error={errors.images} />
           </Panel>
 
-          <Panel title="Pricing" description="Prices include GST.">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="MRP (₹)" htmlFor="mrp" error={errors.mrpRupees}>
+          <Panel title="Pricing" description="Prices include GST. Enter the MRP and your selling price — the discount % is worked out for you.">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field label="MRP / original price (₹)" htmlFor="mrp" error={errors.mrpRupees}>
                 <input
                   id="mrp"
                   inputMode="decimal"
                   className={inputCls}
                   value={mrp}
-                  onChange={(e) => setMrp(e.target.value.replace(/[^\d.]/g, ""))}
-                  placeholder="e.g. 1499"
+                  onChange={(e) => setMrp(e.target.value.replace(/[^d.]/g, ""))}
+                  placeholder="e.g. 1000"
                   aria-invalid={!!errors.mrpRupees}
                 />
               </Field>
-              <Field label="Discount (%)" htmlFor="discount" error={errors.discountPercent}>
+              <Field label="Selling price (₹)" htmlFor="salePrice" error={errors.salePriceRupees} hint="Same as MRP = no discount">
                 <input
-                  id="discount"
-                  inputMode="numeric"
+                  id="salePrice"
+                  inputMode="decimal"
                   className={inputCls}
-                  value={discount}
-                  onChange={(e) => setDiscount(e.target.value.replace(/\D/g, "").slice(0, 2))}
-                  aria-invalid={!!errors.discountPercent}
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value.replace(/[^d.]/g, ""))}
+                  placeholder="e.g. 895.50"
+                  aria-invalid={!!errors.salePriceRupees}
+                />
+              </Field>
+              <Field label="Delivery charge (₹)" htmlFor="delivery" error={errors.deliveryRupees} hint="Per piece · 0 = free">
+                <input
+                  id="delivery"
+                  inputMode="decimal"
+                  className={inputCls}
+                  value={delivery}
+                  onChange={(e) => setDelivery(e.target.value.replace(/[^d.]/g, ""))}
+                  placeholder="e.g. 300"
+                  aria-invalid={!!errors.deliveryRupees}
                 />
               </Field>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Quick discount">
-              {DISCOUNT_CHIPS.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDiscount(String(d))}
-                  className={cn(
-                    "h-9 min-w-12 rounded-full border px-3 text-sm transition-colors",
-                    discountNum === d ? "border-accent bg-accent/15 text-fg-strong" : "border-border text-fg-muted hover:border-border-strong",
-                  )}
-                >
-                  {d === 0 ? "None" : `${d}%`}
-                </button>
-              ))}
-            </div>
-            <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-md border border-border bg-bg px-4 py-3">
-              <span className="text-sm text-fg-muted">Customer pays</span>
-              <span className="text-xl font-semibold text-fg-strong tabular-nums">{mrpPaise > 0 ? formatPaise(salePaise) : "—"}</span>
-              {mrpPaise > 0 && discountNum > 0 && (
-                <>
-                  <s className="text-sm text-fg-muted tabular-nums">{formatPaise(mrpPaise)}</s>
-                  <span className="text-sm text-accent">saves {formatPaise(mrpPaise - salePaise)}</span>
-                </>
-              )}
+            {mrpPaise > 0 && salePaise > mrpPaise && <p className="mt-2 text-xs text-danger">Selling price can&apos;t be more than MRP.</p>}
+            <div className="mt-4 space-y-2 rounded-md border border-border bg-bg px-4 py-3">
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="text-sm text-fg-muted">Discount</span>
+                <span className="text-xl font-semibold text-accent tabular-nums">{saleValid ? (offPercent > 0 ? formatPercent(offPercent) + " off" : "No discount") : "—"}</span>
+                {saleValid && offPercent > 0 && <span className="text-sm text-fg-muted">saves {formatPaise(mrpPaise - salePaise)}</span>}
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-border pt-2 text-sm">
+                <span className="text-fg-muted">Customer pays per piece</span>
+                <span className="font-semibold text-fg-strong tabular-nums">{saleValid ? formatPaise(salePaise) : "—"}</span>
+                <span className="text-fg-muted">+ {formatPaise(deliveryPaise)} delivery =</span>
+                <span className="text-lg font-semibold text-fg-strong tabular-nums">{saleValid ? formatPaise(salePaise + deliveryPaise) : "—"}</span>
+              </div>
             </div>
           </Panel>
 
@@ -300,7 +304,7 @@ export function ProductForm({ initial, categories }: { initial?: Initial; catego
                             />
                           </label>
                           <label className="text-xs text-fg-muted sm:contents">
-                            <span className="sm:hidden">MRP override (₹)</span>
+                            <span className="sm:hidden">MRP override (₹) · same discount %</span>
                             <input
                               inputMode="decimal"
                               className={inputCls}

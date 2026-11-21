@@ -62,7 +62,7 @@ export function OrderView({ order }: { order: OrderDetail }) {
               <dd className="tabular-nums">{formatPaise(order.pricing.subtotalPaise)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-fg-muted">Shipping</dt>
+              <dt className="text-fg-muted">Delivery</dt>
               <dd className="tabular-nums">{order.pricing.shippingPaise ? formatPaise(order.pricing.shippingPaise) : "Free"}</dd>
             </div>
             <div className="flex justify-between border-t border-border pt-2 font-semibold text-fg-strong">
